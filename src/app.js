@@ -39,6 +39,8 @@ const jsonParser = express.json();
 app.post("/test", jsonParser, async (req, res, next) => {
   // const thing = await JSON.parse(req.body);
   console.log(req.body);
+  console.log(req.body.id);
+  console.log(req.body.title);
 });
 
 app.use(function errorHandler(error, req, res, next) {
