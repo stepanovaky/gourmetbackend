@@ -30,9 +30,9 @@ app.use(
   })
 );
 
-app.get("/test", async (req, res, next) => {
-  console.log(req);
-});
+// app.get("/test", async (req, res, next) => {
+//   console.log(req);
+// });
 
 app.post("/test", async (req, res, next) => {
   console.log(req);
