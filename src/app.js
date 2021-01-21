@@ -6,7 +6,8 @@ const cors = require("cors");
 const { NODE_ENV } = require("./config");
 var { graphqlHTTP } = require("express-graphql");
 const schema = require("./schema");
-const fetch = require("./database-service");
+const DatabaseService = require("./database-service");
+// const fetch = require("./database-service");
 
 const app = express();
 
@@ -20,6 +21,8 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
+// fetch();
+
 app.use(
   "/graphql",
   cors(corsOptions),
@@ -30,18 +33,22 @@ app.use(
   })
 );
 
-// app.get("/test", async (req, res, next) => {
-//   console.log(req);
-// });
-
 const jsonParser = express.json();
 
-app.post("/test", jsonParser, async (req, res, next) => {
-  // const thing = await JSON.parse(req.body);
+app.post("/api/product", jsonParser, async (req, res, next) => {
+  //6527e5de7b0af7ed393d7b8b842c7bfdca463ed4d797a8318c7763de5b0e9e88
+  //for authentication purposes
   console.log(req.body);
   console.log(req.body.id);
   console.log(req.body.title);
+  DatabaseService.writeProductToTable(req.body.id, req.body.title);
+  //CODE TO SEND THIS DATA TO DYNAMODB TO THE TABLE LISTED PRODUCTS
 });
+
+//WEBHOOK EVERY TIME PRODUCT IS PURCHASED FROM SHOPIFY GOURMET EASY STORE
+//ADD DIRECTLY TO WARRANTIES TABLE **IF WARRANTY EXISTS, IF NOT REJECT AND NOTIFY CLIENT**
+//ADD PRODUCT_ID, OWNER-NAME, OWNER-EMAIL, BOUGHT-FROM SHOPIFY, PRODUCT NAME, WARRANTY DURATION,
+//START OF WARRANTY
 
 app.use(function errorHandler(error, req, res, next) {
   let response;

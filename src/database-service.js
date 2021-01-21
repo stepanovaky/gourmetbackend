@@ -1,58 +1,86 @@
 require("dotenv").config();
-const AWS = require("aws-sdk");
-const {
-  DynamoDBClient,
-  DeleteTableCommand,
-} = require("@aws-sdk/client-dynamodb");
+
+const database = require("./database");
 
 // Set the AWS Region
-const REGION = "REGION"; //e.g. "us-east-1"
+const REGION = "us-east-1"; //e.g. "us-east-1"
 
 // Set the parameters
-const params = {
-  TableName: "TABLE_NAME",
-};
 
 // Create DynamoDB service object
-const dbclient = new DynamoDBClient({ region: "us-east-1" });
+// const dbclient = new DynamoDBClient({ region: REGION });
 
-const fetch = async () => {
-  try {
-    const data = await dbclient.send(new DeleteTableCommand(params));
-    console.log("Success, table deleted", data);
-  } catch (err) {
-    if (err && err.code === "ResourceNotFoundException") {
-      console.log("Error: Table not found");
-    } else if (err && err.code === "ResourceInUseException") {
-      console.log("Error: Table in use");
-    }
-  }
+const DatabaseService = {
+  //Add product to table 'products'
+  async writeProductToTable(id, name) {
+    const params = {
+      TableName: "products",
+      Item: {
+        product_id: { S: id },
+        product_name: { S: name },
+      },
+    };
+    database.writeNewData(params);
+  },
+  async getProductToAddWarranty(id, duration) {
+    const params = {
+      TableName: "products",
+      Key: { product_id: id },
+      UpdateExpression: "ADD #name :value",
+      ExpressionAttributeNames: {
+        "#name": "warranty-duration",
+      },
+      ExpressionAttributeValues: {
+        ":value": `${duration}`,
+        //{N :/= duration}
+        //new AttributeValue{N = duration}
+      },
+    };
+    database.updateData(params);
+  },
+  async addCustomerRegistration(customer_info) {
+    //if customer_info.bought_from === "amazon",
+    //here comes code to check if the item was actually sold on amazon
+
+    //
+    const paramsToRead = {
+      TableName: "products",
+      Key: {
+        product_id: { S: id },
+      },
+      ProjectionExpression: "product_id",
+    };
+
+    const data = database.getDataSingle(paramsToRead);
+    //get item-name
+    //get item-id
+    //get item-warranty-duration
+
+    const name = data.item - name; //so they'd stop striking out name
+
+    const paramsToWrite = {
+      TableName: "warranty",
+      Item: {
+        product_id: { S: id },
+        product_name: { S: name },
+        warranty_exp: {
+          /*S:*/
+          /*new date plus add item-warranty-duration years */
+        },
+        warranty_start: { S: new Date().getTime() },
+        //owner_email
+        //owner_name
+        //bought_from
+        //warranty_duration
+        //waranty_start
+      },
+    };
+    database.writeNewData(paramsToWrite);
+  },
+  async getAllWarranties() {
+    const data = getBatchData(/*params?*/);
+    //code to display data
+  },
 };
 
-// let awsConfig = {
-//   region: "us-east-1",
-//   endpoint: "http://dynamodb.us-east-1.amazonaws.com",
-//   accessKeyId: `${process.env.AWS_ACCESS_KEY_ID}`,
-//   secretAccessKey: `${process.env.AWS_SECRET_ACCESS_KEY}`,
-// };
-
-// AWS.config.update(awsConfig);
-
-// let docClient = new AWS.DynamoDB.DocumentClient();
-// let fetch = function () {
-//   var params = {
-//     TableName: "gourmeteasy_warranty",
-//     Key: {
-//       email: "test@gmail.com",
-//     },
-//   };
-//   docClient.get(params, function (err, data) {
-//     if (err) {
-//       console.log(err);
-//     } else {
-//       console.log("there");
-//     }
-//   });
-// };
-
-module.exports = fetch;
+module.exports = DatabaseService;
