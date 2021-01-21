@@ -35,7 +35,8 @@ app.use(
 // });
 
 app.post("/test", async (req, res, next) => {
-  console.log(JSON.parse(req.body));
+  const thing = await JSON.parse(req.body);
+  console.log(thing);
 });
 
 app.use(function errorHandler(error, req, res, next) {
