@@ -34,7 +34,9 @@ app.use(
 //   console.log(req);
 // });
 
-app.post("/test", async (req, res, next) => {
+const jsonParser = express.json();
+
+app.post("/test", jsonParser, async (req, res, next) => {
   const thing = await JSON.parse(req.body);
   console.log(thing);
 });
