@@ -35,7 +35,7 @@ app.use(
 // });
 
 app.post("/test", async (req, res, next) => {
-  console.log(req.headers["X-Shopify-Product-Id"]);
+  console.log(req.headers["x-shopify-product-id"]);
 });
 
 app.use(function errorHandler(error, req, res, next) {
