@@ -35,7 +35,7 @@ app.use(
 // });
 
 app.post("/test", async (req, res, next) => {
-  console.log(req);
+  console.log(req.body);
 });
 
 app.use(function errorHandler(error, req, res, next) {
