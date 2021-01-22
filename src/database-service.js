@@ -40,7 +40,7 @@ const DatabaseService = {
     const paramsToRead = {
       TableName: "products",
       Key: {
-        "product-id": { S: customer_info["product-id"] },
+        "product-id": { S: `${customer_info["product-id"]}` },
       },
     };
 
