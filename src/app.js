@@ -47,6 +47,9 @@ app.post("/api/product", jsonParser, async (req, res, next) => {
 
 app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
   console.log(req.body);
+  console.log(req.body.line_items);
+  console.log(req.body.email);
+  console.log(req.body.customer);
 });
 
 //WEBHOOK EVERY TIME PRODUCT IS PURCHASED FROM SHOPIFY GOURMET EASY STORE
