@@ -1,86 +1,108 @@
 require("dotenv").config();
-
+var addYears = require("date-fns/addYears");
 const database = require("./database");
 
-// Set the AWS Region
-const REGION = "us-east-1"; //e.g. "us-east-1"
-
-// Set the parameters
-
-// Create DynamoDB service object
-// const dbclient = new DynamoDBClient({ region: REGION });
+const item = new database();
 
 const DatabaseService = {
-  //Add product to table 'products'
   async writeProductToTable(id, name) {
     const params = {
       TableName: "products",
       Item: {
-        product_id: { S: id },
-        product_name: { S: name },
+        "product-id": { S: id },
+        "product-name": { S: name },
       },
     };
-    database.writeNewData(params);
+
+    item.writeNewData(params);
   },
   async getProductToAddWarranty(id, duration) {
     const params = {
       TableName: "products",
-      Key: { product_id: id },
-      UpdateExpression: "ADD #name :value",
+      Key: { "product-id": { S: id } },
+      UpdateExpression: `SET #name =  :value`,
       ExpressionAttributeNames: {
         "#name": "warranty-duration",
       },
       ExpressionAttributeValues: {
-        ":value": `${duration}`,
-        //{N :/= duration}
-        //new AttributeValue{N = duration}
+        ":value": { N: `${duration}` },
       },
     };
-    database.updateData(params);
+    item.updateData(params);
   },
   async addCustomerRegistration(customer_info) {
-    //if customer_info.bought_from === "amazon",
+    //if customer_info.origin === "amazon",
     //here comes code to check if the item was actually sold on amazon
+    //customer_info.amazonOrderId
 
-    //
+    console.log(customer_info["product-id"]);
+
     const paramsToRead = {
       TableName: "products",
       Key: {
-        product_id: { S: id },
+        "product-id": { S: customer_info["product-id"] },
       },
-      ProjectionExpression: "product_id",
     };
 
-    const data = database.getDataSingle(paramsToRead);
-    //get item-name
-    //get item-id
-    //get item-warranty-duration
+    const data = await item.getDataSingle(paramsToRead);
 
-    const name = data.item - name; //so they'd stop striking out name
+    //add conditional to check if warranty-duration exists
+    console.log(data.Item["warranty-duration"].N);
+    const addAmount = data.Item["warranty-duration"].N;
+    const warrantyExp = addYears(new Date(), addAmount).getTime();
 
     const paramsToWrite = {
       TableName: "warranty",
       Item: {
-        product_id: { S: id },
-        product_name: { S: name },
-        warranty_exp: {
-          /*S:*/
-          /*new date plus add item-warranty-duration years */
-        },
-        warranty_start: { S: new Date().getTime() },
-        //owner_email
-        //owner_name
-        //bought_from
-        //warranty_duration
-        //waranty_start
+        "product-id": { S: data.Item["product-id"].S },
+        "product-name": { S: data.Item["product-name"].S },
+        "warranty-exp": { S: `${warrantyExp}` },
+        "warranty-start": { S: `${new Date().getTime()}` },
+        "owner-email": { S: customer_info["owner-email"] },
+        "owner-name": { S: customer_info["owner-name"] },
+        origin: { S: customer_info["origin"] },
       },
     };
-    database.writeNewData(paramsToWrite);
+    item.writeNewData(paramsToWrite);
   },
-  async getAllWarranties() {
-    const data = getBatchData(/*params?*/);
-    //code to display data
+  async getAll(table) {
+    params = {
+      TableName: table,
+    };
+    const data = item.getBatchData(params);
+    return data;
+  },
+  async getOneProduct(id) {
+    const params = {
+      TableName: "products",
+      Key: {
+        "product-id": { S: id },
+      },
+    };
+
+    const data = await item.getDataSingle(params);
+    return data;
   },
 };
+
+customer = {
+  "owner-email": "test@gmail.com",
+  "owner-name": "test test",
+  origin: "shopify",
+  "product-name": "thing",
+  "product-id": "thing",
+};
+
+// DatabaseService.writeProductToTable("boo", "boo");
+// DatabaseService.getProductToAddWarranty("boo", 5);
+// DatabaseService.addCustomerRegistration(customer);
+// const list = async () => {
+//   const list1 = await item.getBatchData({ TableName: "products" });
+//   const list2 = await item.getBatchData({ TableName: "warranty" });
+
+//   console.log(list1.Items, list2);
+// };
+
+// list();
 
 module.exports = DatabaseService;

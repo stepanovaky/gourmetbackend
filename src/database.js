@@ -6,26 +6,8 @@ const {
   PutItemCommand,
   UpdateItemCommand,
   GetItemCommand,
+  ScanCommand,
 } = require("@aws-sdk/client-dynamodb");
-
-class House {
-  constructor(color) {
-    this.color = color;
-  }
-
-  getFurniture() {
-    return "sofa";
-  }
-}
-
-const houseObject = new House("red");
-const houseObject2 = new House("blue");
-
-console.log(houseObject.color);
-console.log(houseObject.getFurniture());
-
-console.log(houseObject2.color);
-console.log(houseObject2.getFurniture());
 
 // Set the AWS Region
 const REGION = "us-east-1"; //e.g. "us-east-1"
@@ -39,6 +21,7 @@ class database {
   constructor() {}
 
   async writeNewData(params) {
+    console.log(params);
     try {
       const data = await dbclient.send(new PutItemCommand(params));
       console.log(data);
@@ -48,6 +31,7 @@ class database {
   }
 
   async updateData(params) {
+    // console.log(params);
     try {
       const data = await dbclient.send(new UpdateItemCommand(params));
       console.log(data);
@@ -57,19 +41,60 @@ class database {
   }
 
   async getDataSingle(params) {
+    // console.log(params);
     const data = await dbclient.send(new GetItemCommand(params));
-    console.log("Success", data);
+    // console.log("Success", data.Item);
     return data;
   }
 
-  async getBatchData(/*params? probably include table*/) {
+  async getBatchData(params) {
     try {
-      const data = await dbclient.send(new ScanCommand(/*params? */));
+      const data = await dbclient.send(new ScanCommand(params));
       return data;
     } catch (err) {
       console.log("Error", err);
     }
   }
 }
+
+// const params = {
+//   AttributeDefinitions: [
+//     {
+//       AttributeName: "product-id", //ATTRIBUTE_NAME_1
+//       AttributeType: "S", //ATTRIBUTE_TYPE
+//     },
+//     {
+//       AttributeName: "warranty-exp", //ATTRIBUTE_NAME_2
+//       AttributeType: "S", //ATTRIBUTE_TYPE
+//     },
+//   ],
+//   KeySchema: [
+//     {
+//       AttributeName: "product-id", //ATTRIBUTE_NAME_1
+//       KeyType: "HASH",
+//     },
+//     {
+//       AttributeName: "warranty-exp", //ATTRIBUTE_NAME_2
+//       KeyType: "RANGE",
+//     },
+//   ],
+//   ProvisionedThroughput: {
+//     ReadCapacityUnits: 1,
+//     WriteCapacityUnits: 1,
+//   },
+//   TableName: "warranty", //TABLE_NAME
+//   StreamSpecification: {
+//     StreamEnabled: false,
+//   },
+// };
+// const run = async () => {
+//   try {
+//     const data = await dbclient.send(new CreateTableCommand(params));
+//     console.log("Table Created", data);
+//   } catch (err) {
+//     console.log("Error", err);
+//   }
+// };
+// run();
 
 module.exports = database;

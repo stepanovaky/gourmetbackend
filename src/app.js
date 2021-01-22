@@ -10,6 +10,7 @@ const DatabaseService = require("./database-service");
 // const fetch = require("./database-service");
 
 const app = express();
+const jsonParser = express.json();
 
 const morganOption = NODE_ENV === "production" ? "tiny" : "common";
 
@@ -25,15 +26,14 @@ const corsOptions = {
 
 app.use(
   "/graphql",
+  jsonParser,
   cors(corsOptions),
-  graphqlHTTP({
+  graphqlHTTP((req) => ({
     schema: schema,
     graphiql: true,
     pretty: true,
-  })
+  }))
 );
-
-const jsonParser = express.json();
 
 app.post("/api/product", jsonParser, async (req, res, next) => {
   //6527e5de7b0af7ed393d7b8b842c7bfdca463ed4d797a8318c7763de5b0e9e88
@@ -43,6 +43,10 @@ app.post("/api/product", jsonParser, async (req, res, next) => {
   console.log(req.body.title);
   DatabaseService.writeProductToTable(req.body.id, req.body.title);
   //CODE TO SEND THIS DATA TO DYNAMODB TO THE TABLE LISTED PRODUCTS
+});
+
+app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
+  console.log(req.body);
 });
 
 //WEBHOOK EVERY TIME PRODUCT IS PURCHASED FROM SHOPIFY GOURMET EASY STORE
