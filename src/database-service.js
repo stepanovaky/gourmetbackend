@@ -9,7 +9,7 @@ const DatabaseService = {
     const params = {
       TableName: "products",
       Item: {
-        "product-id": { S: id },
+        "product-id": { S: `${id}` },
         "product-name": { S: name },
       },
     };
