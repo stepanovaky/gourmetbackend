@@ -43,13 +43,21 @@ app.post("/api/product", jsonParser, async (req, res, next) => {
   console.log(req.body.title);
   DatabaseService.writeProductToTable(req.body.id, req.body.title);
   //CODE TO SEND THIS DATA TO DYNAMODB TO THE TABLE LISTED PRODUCTS
+
+  res.status(200);
 });
 
 app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
-  console.log(req.body);
-  console.log(req.body.line_items);
-  console.log(req.body.email);
-  console.log(req.body.customer);
+  // console.log(req.body);
+  console.log(req.body.line_items.map((item) => console.log(item.product_id)));
+  // console.log(req.body.email);
+  console.log(
+    req.body.customer.first_name,
+    req.body.customer.last_name,
+    req.body.customer.email
+  );
+
+  res.status(200);
 });
 
 //WEBHOOK EVERY TIME PRODUCT IS PURCHASED FROM SHOPIFY GOURMET EASY STORE
