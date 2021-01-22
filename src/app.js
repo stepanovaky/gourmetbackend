@@ -49,12 +49,18 @@ app.post("/api/product", jsonParser, async (req, res, next) => {
 
 app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
   // console.log(req.body);
-  console.log(req.body.line_items.map((item) => console.log(item.product_id)));
-  // console.log(req.body.email);
   console.log(
-    req.body.customer.first_name,
-    req.body.customer.last_name,
-    req.body.customer.email
+    req.body.line_items.map((item) => {
+      const customer_info = {
+        "owner-email": req.body.customer.email
+          ? req.body.customer.email
+          : "not given",
+        "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
+        origin: "shopify",
+        "product-id": item.product_id,
+      };
+      DatabaseService.addCustomerRegistration(customer_info);
+    })
   );
 
   res.status(200);
