@@ -47,23 +47,28 @@ const DatabaseService = {
     const data = await item.getDataSingle(paramsToRead);
 
     //add conditional to check if warranty-duration exists
-    console.log(data.Item["warranty-duration"].N);
-    const addAmount = data.Item["warranty-duration"].N;
-    const warrantyExp = addYears(new Date(), addAmount).getTime();
 
-    const paramsToWrite = {
-      TableName: "warranty",
-      Item: {
-        "product-id": { S: data.Item["product-id"].S },
-        "product-name": { S: data.Item["product-name"].S },
-        "warranty-exp": { S: `${warrantyExp}` },
-        "warranty-start": { S: `${new Date().getTime()}` },
-        "owner-email": { S: customer_info["owner-email"] },
-        "owner-name": { S: customer_info["owner-name"] },
-        origin: { S: customer_info["origin"] },
-      },
-    };
-    item.writeNewData(paramsToWrite);
+    if (data.Item["warranty-duration"]) {
+      console.log(data.Item["warranty-duration"].N);
+      const addAmount = data.Item["warranty-duration"].N;
+      const warrantyExp = addYears(new Date(), addAmount).getTime();
+
+      const paramsToWrite = {
+        TableName: "warranty",
+        Item: {
+          "product-id": { S: data.Item["product-id"].S },
+          "product-name": { S: data.Item["product-name"].S },
+          "warranty-exp": { S: `${warrantyExp}` },
+          "warranty-start": { S: `${new Date().getTime()}` },
+          "owner-email": { S: customer_info["owner-email"] },
+          "owner-name": { S: customer_info["owner-name"] },
+          origin: { S: customer_info["origin"] },
+        },
+      };
+      item.writeNewData(paramsToWrite);
+    } else {
+      console.log("MISSING WARRANTY DURATION");
+    }
   },
   async getAll(table) {
     params = {
@@ -77,6 +82,17 @@ const DatabaseService = {
       TableName: "products",
       Key: {
         "product-id": { S: id },
+      },
+    };
+
+    const data = await item.getDataSingle(params);
+    return data;
+  },
+  async getOneCustomer(id) {
+    const params = {
+      TableName: "warranty",
+      Key: {
+        "owner-email": { S: id },
       },
     };
 

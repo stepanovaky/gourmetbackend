@@ -63,7 +63,7 @@ app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
     })
   );
 
-  //************** DOES NOT WORK, PROBLEM WITH GETITEMCOMMAND */
+  //NOT FULLY TESTED, NEED INTERFACE, AND TO ADD WARRANTIES
 
   res.status(200);
 });

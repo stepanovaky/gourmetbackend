@@ -101,7 +101,37 @@ const RootQueryType = new GraphQLObjectType({
     allWarranties: {
       type: new GraphQLList(WarrantyType),
       description: "Find specific product",
-      resolve: () => warranties,
+      resolve: async () => {
+        const item = await DatabaseService.getAll("warranty");
+        console.log(item);
+        const warrantyList = [];
+        item.Items.map((item) => {
+          const productId = item["product-id"].S;
+          const productName = item["product-name"].S;
+          const warrantyExp = format(
+            new Date(parseInt(item["warranty-exp"].S)),
+            "MM/dd/yyyy"
+          );
+          const warrantyStart = format(
+            new Date(parseInt(item["warranty-start"].S)),
+            "MM/dd/yyyy"
+          );
+          const ownerEmail = item["owner-email"] ? item["owner-email"].S : "";
+          const ownerName = item["owner-name"].S;
+          const origin = item.origin ? item.origin.S : "";
+
+          warrantyList.push({
+            productId,
+            productName,
+            warrantyExp,
+            warrantyStart,
+            ownerEmail,
+            ownerName,
+            origin,
+          });
+        });
+        return warrantyList;
+      },
     },
     allProducts: {
       type: new GraphQLList(ProductType),
@@ -168,6 +198,7 @@ const RootQueryType = new GraphQLObjectType({
       },
       resolve: async (parent, args) => {
         const items = await DatabaseService.getAll("warranty");
+        // const thing = await DatabaseService.getOneCustomer();
         console.log(items);
       },
     },
@@ -189,7 +220,7 @@ const RootMutationType = new GraphQLObjectType({
         DatabaseService.writeProductToTable(args.productId, args.productName);
       },
     },
-    addWarrantyToProduct: {},
+    // addWarrantyToProduct: {},
   }),
 });
 
