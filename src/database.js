@@ -41,7 +41,7 @@ class database {
   }
 
   async getDataSingle(params) {
-    // console.log(params);
+    console.log(params);
     const data = await dbclient.send(new GetItemCommand(params));
     // console.log("Success", data.Item);
     return data;
