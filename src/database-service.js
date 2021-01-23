@@ -49,8 +49,8 @@ const DatabaseService = {
 
     //add conditional to check if warranty-duration exists
 
-    console.log(data.Item["warranty-duration"]);
-    console.log(data.Items["warranty-duration"]);
+    console.log(data.Item[("warranty-duration", "item")]);
+    console.log(data.Items[("warranty-duration", "items")]);
 
     if (data.Item["warranty-duration"] > 0) {
       console.log(data.Item["warranty-duration"].N);
