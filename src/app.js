@@ -56,25 +56,24 @@ app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
   req.body.line_items.map((item) => {
     console.log(req.body.customer);
 
-    if (req.body.customer.email) {
+    if (req.body.customer.email !== null) {
       console.log(req.body.customer.email, "this right here");
       const customer_info = {
-        "owner-email": req.body.customer.email
-          ? req.body.customer.email
-          : "not given",
+        "owner-email": req.body.customer.email,
         "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
         origin: "shopify",
         "product-id": item.product_id,
       };
       DatabaseService.addCustomerRegistration(customer_info);
+
+      res.status(200);
     } else {
       console.log("MISSING EMAIL");
+      res.status(400).json({ message: "No email provided" });
     }
   });
 
   //NOT FULLY TESTED, NEED INTERFACE, AND TO ADD WARRANTIES
-
-  res.status(200);
 });
 
 //WEBHOOK EVERY TIME PRODUCT IS PURCHASED FROM SHOPIFY GOURMET EASY STORE
