@@ -54,16 +54,22 @@ app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
   // console.log(req.body);
 
   req.body.line_items.map((item) => {
-    console.log(req.body.customer.email, "this right here");
-    const customer_info = {
-      "owner-email": req.body.customer.email
-        ? req.body.customer.email
-        : "not given",
-      "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
-      origin: "shopify",
-      "product-id": item.product_id,
-    };
-    DatabaseService.addCustomerRegistration(customer_info);
+    console.log(req.body.customer);
+
+    if (req.body.customer.email) {
+      console.log(req.body.customer.email, "this right here");
+      const customer_info = {
+        "owner-email": req.body.customer.email
+          ? req.body.customer.email
+          : "not given",
+        "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
+        origin: "shopify",
+        "product-id": item.product_id,
+      };
+      DatabaseService.addCustomerRegistration(customer_info);
+    } else {
+      console.log("MISSING EMAIL");
+    }
   });
 
   //NOT FULLY TESTED, NEED INTERFACE, AND TO ADD WARRANTIES
