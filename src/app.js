@@ -54,7 +54,7 @@ app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
   // console.log(req.body);
 
   req.body.line_items.map((item) => {
-    console.log(req.body.customer.email);
+    console.log(req.body.customer.email, "this right here");
     const customer_info = {
       "owner-email": req.body.customer.email
         ? req.body.customer.email

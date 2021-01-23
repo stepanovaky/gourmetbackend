@@ -11,6 +11,7 @@ const DatabaseService = {
       Item: {
         "product-id": { S: `${id}` },
         "product-name": { S: name },
+        "warranty-duration": { N: 0 },
       },
     };
 
@@ -48,7 +49,7 @@ const DatabaseService = {
 
     //add conditional to check if warranty-duration exists
 
-    if (data.Item["warranty-duration"]) {
+    if (data.Item["warranty-duration"] > 0) {
       console.log(data.Item["warranty-duration"].N);
       const addAmount = data.Item["warranty-duration"].N;
       const warrantyExp = addYears(new Date(), addAmount).getTime();
