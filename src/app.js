@@ -52,20 +52,19 @@ app.post("/api/product", jsonParser, async (req, res, next) => {
 
 app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
   // console.log(req.body);
-  console.log(
-    req.body.line_items.map((item) => {
-      console.log(req.body.customer.email);
-      const customer_info = {
-        "owner-email": req.body.customer.email
-          ? req.body.customer.email
-          : "not given",
-        "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
-        origin: "shopify",
-        "product-id": item.product_id,
-      };
-      DatabaseService.addCustomerRegistration(customer_info);
-    })
-  );
+
+  req.body.line_items.map((item) => {
+    console.log(req.body.customer.email);
+    const customer_info = {
+      "owner-email": req.body.customer.email
+        ? req.body.customer.email
+        : "not given",
+      "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
+      origin: "shopify",
+      "product-id": item.product_id,
+    };
+    DatabaseService.addCustomerRegistration(customer_info);
+  });
 
   //NOT FULLY TESTED, NEED INTERFACE, AND TO ADD WARRANTIES
 
