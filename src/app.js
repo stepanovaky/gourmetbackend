@@ -66,7 +66,11 @@ app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
         origin: "shopify",
         "product-id": item.product_id,
       };
-      DatabaseService.addCustomerRegistration(customer_info);
+      try {
+        DatabaseService.addCustomerRegistration(customer_info);
+      } catch (err) {
+        console.log(err);
+      }
     } else {
       console.log("MISSING EMAIL");
       res.status(400).json({ message: "No email provided" });
