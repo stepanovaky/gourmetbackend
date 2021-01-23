@@ -7,7 +7,6 @@ var {
   GraphQLNonNull,
   GraphQLFloat,
 } = require("graphql");
-const { format } = require("date-fns");
 const DatabaseService = require("./database-service");
 
 const ProductType = new GraphQLObjectType({
@@ -43,14 +42,9 @@ const CustomerType = new GraphQLObjectType({
         const serializeWarranties = specificWarranties.map((item) => {
           const productId = item["product-id"].S;
           const productName = item["product-name"].S;
-          const warrantyExp = format(
-            new Date(parseInt(item["warranty-exp"].S)),
-            "MM/dd/yyyy"
-          );
-          const warrantyStart = format(
-            new Date(parseInt(item["warranty-start"].S)),
-            "MM/dd/yyyy"
-          );
+          const warrantyExp = item["warranty-exp"].S;
+          const warrantyStart = item["warranty-start"].S;
+
           // const origin = item.origin.S;
 
           console.log(warrantyExp);
@@ -109,14 +103,8 @@ const RootQueryType = new GraphQLObjectType({
         item.Items.map((item) => {
           const productId = item["product-id"].S;
           const productName = item["product-name"].S;
-          const warrantyExp = format(
-            new Date(parseInt(item["warranty-exp"].S)),
-            "MM/dd/yyyy"
-          );
-          const warrantyStart = format(
-            new Date(parseInt(item["warranty-start"].S)),
-            "MM/dd/yyyy"
-          );
+          const warrantyExp = item["warranty-exp"].S;
+          const warrantyStart = item["warranty-start"].S;
           const ownerEmail = item["owner-email"] ? item["owner-email"].S : "";
           const ownerName = item["owner-name"].S;
           const origin = item.origin ? item.origin.S : "";

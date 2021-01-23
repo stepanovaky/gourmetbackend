@@ -60,21 +60,21 @@ class database {
   }
 }
 
-const params = {
-  TableName: "products",
-  Key: {
-    "product-id": { S: "10" },
-  },
-};
+// const params = {
+//   TableName: "products",
+//   Key: {
+//     "product-id": { S: "10" },
+//   },
+// };
 
-async function run() {
-  try {
-    const data = await dbclient.send(new DeleteItemCommand(params));
-    console.log(data);
-  } catch (err) {
-    console.log(err);
-  }
-}
+// async function run() {
+//   try {
+//     const data = await dbclient.send(new DeleteItemCommand(params));
+//     console.log(data);
+//   } catch (err) {
+//     console.log(err);
+//   }
+// }
 
 // const params = {
 //   AttributeDefinitions: [
@@ -82,11 +82,19 @@ async function run() {
 //       AttributeName: "product-id", //ATTRIBUTE_NAME_1
 //       AttributeType: "S", //ATTRIBUTE_TYPE
 //     },
+//     {
+//       AttributeName: "warranty-exp",
+//       AttributeType: "S",
+//     },
 //   ],
 //   KeySchema: [
 //     {
 //       AttributeName: "product-id", //ATTRIBUTE_NAME_1
 //       KeyType: "HASH",
+//     },
+//     {
+//       AttributeName: "warranty-exp",
+//       KeyType: "RANGE",
 //     },
 //   ],
 //   ProvisionedThroughput: {
@@ -120,6 +128,6 @@ async function run() {
 //     console.log(err);
 //   }
 // };
-run();
+// run();
 
 module.exports = database;

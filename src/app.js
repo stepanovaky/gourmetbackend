@@ -57,6 +57,8 @@ app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
     console.log(req.body.customer);
 
     if (req.body.customer.email !== null) {
+      res.status(204);
+
       console.log(req.body.customer.email, "this right here");
       const customer_info = {
         "owner-email": req.body.customer.email,
@@ -65,8 +67,6 @@ app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
         "product-id": item.product_id,
       };
       DatabaseService.addCustomerRegistration(customer_info);
-
-      res.status(200);
     } else {
       console.log("MISSING EMAIL");
       res.status(400).json({ message: "No email provided" });
