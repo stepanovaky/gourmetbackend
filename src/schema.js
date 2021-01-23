@@ -220,6 +220,20 @@ const RootMutationType = new GraphQLObjectType({
         DatabaseService.writeProductToTable(args.productId, args.productName);
       },
     },
+    addWarrantyToProduct: {
+      type: ProductType,
+      description: "Add warranty duration to product",
+      args: {
+        productId: { type: GraphQLNonNull(GraphQLString) },
+        warrantyDuration: { type: GraphQLNonNull(GraphQLInt) },
+      },
+      resolve: async (parent, args) => {
+        DatabaseService.getProductToAddWarranty(
+          args.productId,
+          args.warrantyDuration
+        );
+      },
+    },
     // addWarrantyToProduct: {},
   }),
 });

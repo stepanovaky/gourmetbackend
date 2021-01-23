@@ -7,6 +7,7 @@ const {
   UpdateItemCommand,
   GetItemCommand,
   ScanCommand,
+  DeleteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 
 // Set the AWS Region
@@ -63,19 +64,11 @@ class database {
 //       AttributeName: "product-id", //ATTRIBUTE_NAME_1
 //       AttributeType: "S", //ATTRIBUTE_TYPE
 //     },
-//     {
-//       AttributeName: "warranty-exp", //ATTRIBUTE_NAME_2
-//       AttributeType: "S", //ATTRIBUTE_TYPE
-//     },
 //   ],
 //   KeySchema: [
 //     {
 //       AttributeName: "product-id", //ATTRIBUTE_NAME_1
 //       KeyType: "HASH",
-//     },
-//     {
-//       AttributeName: "warranty-exp", //ATTRIBUTE_NAME_2
-//       KeyType: "RANGE",
 //     },
 //   ],
 //   ProvisionedThroughput: {
@@ -93,6 +86,20 @@ class database {
 //     console.log("Table Created", data);
 //   } catch (err) {
 //     console.log("Error", err);
+//   }
+// };
+// run();
+
+// var params = {
+//   TableName: "warranty",
+// };
+
+// const run = async () => {
+//   try {
+//     const data = await dbclient.send(new DeleteTableCommand(params));
+//     console.log("deleted", data);
+//   } catch (err) {
+//     console.log(err);
 //   }
 // };
 // run();

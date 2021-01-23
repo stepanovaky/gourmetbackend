@@ -18,7 +18,10 @@ app.use(morgan(morganOption));
 // app.use(helmet()); TURN ON FOR PRODUCTION!!!!!!!!!!!!!!!!!!
 
 const corsOptions = {
-  origin: "https://muscled-store.myshopify.com",
+  origin: [
+    "https://muscled-store.myshopify.com",
+    "https://d0c23edbb2c1.ngrok.io",
+  ],
   optionsSuccessStatus: 200,
 };
 
