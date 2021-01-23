@@ -51,10 +51,28 @@ class database {
   async getBatchData(params) {
     try {
       const data = await dbclient.send(new ScanCommand(params));
+      console.log(data.Items.map((item) => console.log(item)));
+
       return data;
     } catch (err) {
       console.log("Error", err);
     }
+  }
+}
+
+const params = {
+  TableName: "products",
+  Key: {
+    "product-id": { S: "10" },
+  },
+};
+
+async function run() {
+  try {
+    const data = await dbclient.send(new DeleteItemCommand(params));
+    console.log(data);
+  } catch (err) {
+    console.log(err);
   }
 }
 
@@ -102,6 +120,6 @@ class database {
 //     console.log(err);
 //   }
 // };
-// run();
+run();
 
 module.exports = database;

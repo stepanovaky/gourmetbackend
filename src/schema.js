@@ -5,6 +5,7 @@ var {
   GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
+  GraphQLFloat,
 } = require("graphql");
 const { format } = require("date-fns");
 const DatabaseService = require("./database-service");
@@ -224,10 +225,11 @@ const RootMutationType = new GraphQLObjectType({
       type: ProductType,
       description: "Add warranty duration to product",
       args: {
-        productId: { type: GraphQLNonNull(GraphQLString) },
+        productId: { type: GraphQLNonNull(GraphQLFloat) },
         warrantyDuration: { type: GraphQLNonNull(GraphQLInt) },
       },
       resolve: async (parent, args) => {
+        console.log("boooo", args);
         DatabaseService.getProductToAddWarranty(
           args.productId,
           args.warrantyDuration

@@ -19,7 +19,7 @@ const DatabaseService = {
   async getProductToAddWarranty(id, duration) {
     const params = {
       TableName: "products",
-      Key: { "product-id": { S: id } },
+      Key: { "product-id": { S: `${id}` } },
       UpdateExpression: `SET #name =  :value`,
       ExpressionAttributeNames: {
         "#name": "warranty-duration",
