@@ -56,30 +56,30 @@ app.post("/api/product", jsonParser, async (req, res, next) => {
 
 app.post("/api/shopify/order", jsonParser, async (req, res, next) => {
   // console.log(req.body);
+  res.status(204);
+  // req.body.line_items.map((item) => {
+  //   console.log(req.body.customer);
 
-  req.body.line_items.map((item) => {
-    console.log(req.body.customer);
+  //   if (req.body.customer.email !== null) {
+  //     res.status(204);
 
-    if (req.body.customer.email !== null) {
-      res.status(204);
-
-      console.log(req.body.customer.email, "this right here");
-      const customer_info = {
-        "owner-email": req.body.customer.email,
-        "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
-        origin: "shopify",
-        "product-id": item.product_id,
-      };
-      try {
-        DatabaseService.addCustomerRegistration(customer_info);
-      } catch (err) {
-        console.log(err);
-      }
-    } else {
-      console.log("MISSING EMAIL");
-      res.status(400).json({ message: "No email provided" });
-    }
-  });
+  //     console.log(req.body.customer.email, "this right here");
+  //     const customer_info = {
+  //       "owner-email": req.body.customer.email,
+  //       "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
+  //       origin: "shopify",
+  //       "product-id": item.product_id,
+  //     };
+  //     try {
+  //       DatabaseService.addCustomerRegistration(customer_info);
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   } else {
+  //     console.log("MISSING EMAIL");
+  //     res.status(400).json({ message: "No email provided" });
+  //   }
+  // });
 
   //NOT FULLY TESTED, NEED INTERFACE, AND TO ADD WARRANTIES
 });
