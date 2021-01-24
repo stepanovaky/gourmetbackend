@@ -57,7 +57,7 @@ app.post("/api/product", jsonParser, async (req, res, next) => {
 app.post("/api/shopify/order", jsonParser, async (req, res) => {
   // console.log(req.body);
   console.log("shopify order");
-  res.status(204);
+  res.status(200).json({ message: "hello" });
   // req.body.line_items.map((item) => {
   //   console.log(req.body.customer);
 
