@@ -56,31 +56,27 @@ app.post("/api/product", jsonParser, async (req, res, next) => {
 
 app.post("/api/shopify/order", jsonParser, async (req, res) => {
   // console.log(req.body);
-  console.log("shopify order");
-  res.status(200).json({ message: "hello" });
-  // req.body.line_items.map((item) => {
-  //   console.log(req.body.customer);
+  res.status(200).json({ message: "order went through" });
+  req.body.line_items.map((item) => {
+    console.log(req.body.customer);
 
-  //   if (req.body.customer.email !== null) {
-  //     res.status(204);
-
-  //     console.log(req.body.customer.email, "this right here");
-  //     const customer_info = {
-  //       "owner-email": req.body.customer.email,
-  //       "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
-  //       origin: "shopify",
-  //       "product-id": item.product_id,
-  //     };
-  //     try {
-  //       DatabaseService.addCustomerRegistration(customer_info);
-  //     } catch (err) {
-  //       console.log(err);
-  //     }
-  //   } else {
-  //     console.log("MISSING EMAIL");
-  //     res.status(400).json({ message: "No email provided" });
-  //   }
-  // });
+    if (req.body.customer.email !== null) {
+      console.log(req.body.customer.email, "this right here");
+      const customer_info = {
+        "owner-email": req.body.customer.email,
+        "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
+        origin: "shopify",
+        "product-id": item.product_id,
+      };
+      try {
+        DatabaseService.addCustomerRegistration(customer_info);
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      console.log("MISSING EMAIL");
+    }
+  });
 
   //NOT FULLY TESTED, NEED INTERFACE, AND TO ADD WARRANTIES
 });
