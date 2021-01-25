@@ -10,7 +10,7 @@ const DatabaseService = {
     const params = {
       TableName: "products",
       Item: {
-        "product-id": { S: `${id}` },
+        "product-id": { N: id },
         "product-name": { S: name },
         "warranty-duration": { N: 0 },
       },
@@ -21,7 +21,7 @@ const DatabaseService = {
   async getProductToAddWarranty(id, duration) {
     const params = {
       TableName: "products",
-      Key: { "product-id": { S: `${id}` } },
+      Key: { "product-id": { N: id } },
       UpdateExpression: `SET #name =  :value`,
       ExpressionAttributeNames: {
         "#name": "warranty-duration",
@@ -40,7 +40,7 @@ const DatabaseService = {
     const paramsToRead = {
       TableName: "products",
       Key: {
-        "product-id": { S: `${customer_info["product-id"]}` },
+        "product-id": { N: `${customer_info["product-id"]}` },
       },
     };
 
@@ -58,7 +58,7 @@ const DatabaseService = {
       const paramsToWrite = {
         TableName: "warranty",
         Item: {
-          "product-id": { S: data.Item["product-id"].S },
+          "product-id": { N: data.Item["product-id"].N },
           "product-name": { S: data.Item["product-name"].S },
           "warranty-exp": { S: `${warrantyExp}` },
           "warranty-start": { S: `${new Date().getTime()}` },
@@ -96,7 +96,7 @@ const DatabaseService = {
     const params = {
       TableName: "products",
       Key: {
-        "product-id": { S: id },
+        "product-id": { N: id },
       },
     };
 

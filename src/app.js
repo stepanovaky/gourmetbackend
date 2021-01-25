@@ -42,7 +42,7 @@ app.use(
 
 app.post("/api/product", jsonParser, async (req, res, next) => {
   res.status(200).json({ message: "product went through" });
-  DatabaseService.writeProductToTable(`${req.body.id}`, req.body.title);
+  DatabaseService.writeProductToTable(req.body.id, req.body.title);
 });
 
 app.post("/api/shopify/order", jsonParser, async (req, res) => {

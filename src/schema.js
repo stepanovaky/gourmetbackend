@@ -13,7 +13,7 @@ const ProductType = new GraphQLObjectType({
   name: "products",
   description: "This represents all of the products in the Gourmet Easy Store",
   fields: () => ({
-    productId: { type: GraphQLNonNull(GraphQLString) },
+    productId: { type: GraphQLNonNull(GraphQLFloat) },
     productName: { type: GraphQLNonNull(GraphQLString) },
     warrantyDuration: { type: GraphQLInt },
   }),
@@ -40,7 +40,7 @@ const CustomerType = new GraphQLObjectType({
           (warranty) => warranty["owner-email"].S === parent.ownerEmail
         );
         const serializeWarranties = specificWarranties.map((item) => {
-          const productId = item["product-id"].S;
+          const productId = item["product-id"].N;
           const productName = item["product-name"].S;
           const warrantyExp = item["warranty-exp"].S;
           const warrantyStart = item["warranty-start"].S;
@@ -65,7 +65,7 @@ const WarrantyType = new GraphQLObjectType({
   description:
     "This represents all of the registered warranties in the Gourmet Easy Store",
   fields: () => ({
-    productId: { type: GraphQLNonNull(GraphQLString) },
+    productId: { type: GraphQLNonNull(GraphQLFloat) },
     productName: { type: GraphQLString },
     warrantyExp: { type: GraphQLString },
     warrantyStart: { type: GraphQLString },
@@ -93,7 +93,7 @@ const RootQueryType = new GraphQLObjectType({
         const item = await DatabaseService.getAll("warranty");
         const warrantyList = [];
         item.Items.map((item) => {
-          const productId = item["product-id"].S;
+          const productId = item["product-id"].N;
           const productName = item["product-name"].S;
           const warrantyExp = item["warranty-exp"].S;
           const warrantyStart = item["warranty-start"].S;
@@ -121,7 +121,7 @@ const RootQueryType = new GraphQLObjectType({
         const item = await DatabaseService.getAll("products");
         const productList = [];
         item.Items.map((item) => {
-          const productId = item["product-id"].S;
+          const productId = item["product-id"].N;
           const productName = item["product-name"].S;
           const warrantyDuration = item["warranty-duration"]
             ? item["warranty-duration"].N
@@ -135,12 +135,12 @@ const RootQueryType = new GraphQLObjectType({
       type: new GraphQLList(ProductType),
       description: "Find specific product",
       args: {
-        id: { type: GraphQLString },
+        id: { type: GraphQLFloat },
       },
       resolve: async (parent, args) => {
         const items = await DatabaseService.getOneProduct(args.id);
         const warrantyDuration = await items.Item["warranty-duration"].N;
-        const productId = await items.Item["product-id"].S;
+        const productId = await items.Item["product-id"].N;
         const productName = await items.Item["product-name"].S;
         return [{ warrantyDuration, productId, productName }];
       },
@@ -185,7 +185,7 @@ const RootMutationType = new GraphQLObjectType({
       description: "add a product",
       args: {
         productName: { type: GraphQLNonNull(GraphQLString) },
-        productId: { type: GraphQLNonNull(GraphQLString) },
+        productId: { type: GraphQLNonNull(GraphQLInt) },
         amazonOrderId: { type: GraphQLNonNull(GraphQLString) },
       },
       resolve: async (parent, args) => {
