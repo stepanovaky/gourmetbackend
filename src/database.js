@@ -22,6 +22,7 @@ class database {
   constructor() {}
 
   async writeNewData(params) {
+    console.log(params);
     try {
       const data = await dbclient.send(new PutItemCommand(params));
     } catch (err) {
