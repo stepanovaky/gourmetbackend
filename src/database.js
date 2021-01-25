@@ -22,41 +22,32 @@ class database {
   constructor() {}
 
   async writeNewData(params) {
-    console.log(params);
     try {
       const data = await dbclient.send(new PutItemCommand(params));
-      console.log(data);
     } catch (err) {
       console.error(err);
     }
   }
 
   async updateData(params) {
-    // console.log(params);
     try {
       const data = await dbclient.send(new UpdateItemCommand(params));
-      console.log(data);
     } catch (err) {
       console.error(err);
     }
   }
 
   async getDataSingle(params) {
-    console.log(params);
     const data = await dbclient.send(new GetItemCommand(params));
-    // console.log("Success", data.Item);
     return data;
   }
 
   async getBatchData(params) {
     try {
       const data = await dbclient.send(new ScanCommand(params));
-      console.log(data.Items.map((item) => console.log(item)));
 
       return data;
-    } catch (err) {
-      console.log("Error", err);
-    }
+    } catch (err) {}
   }
 }
 

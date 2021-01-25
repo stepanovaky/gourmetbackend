@@ -1,7 +1,8 @@
 require("dotenv").config();
 var addYears = require("date-fns/addYears");
 const database = require("./database");
-
+const email = require("./nodemailer");
+const { format } = require("date-fns");
 const item = new database();
 
 const DatabaseService = {
@@ -36,8 +37,6 @@ const DatabaseService = {
     //here comes code to check if the item was actually sold on amazon
     //customer_info.amazonOrderId
 
-    console.log(customer_info["product-id"]);
-
     const paramsToRead = {
       TableName: "products",
       Key: {
@@ -49,13 +48,10 @@ const DatabaseService = {
 
     //add conditional to check if warranty-duration exists
 
-    console.log(data.Item["warranty-duration"], "item");
-
     if (
       data.Item["warranty-duration"] &&
       data.Item["warranty-duration"].N > 0
     ) {
-      console.log(data.Item["warranty-duration"].N, "this far");
       const addAmount = data.Item["warranty-duration"].N;
       const warrantyExp = addYears(new Date(), addAmount).getTime();
 
@@ -72,8 +68,21 @@ const DatabaseService = {
         },
       };
       item.writeNewData(paramsToWrite);
+      async function run(customer_info) {
+        email.send({
+          template: "warranty",
+          message: {
+            to: customer_info["owner-email"],
+          },
+          locals: {
+            productName: customer_info["product-name"],
+            warrantyStart: format(new Date(), "MM/dd/yyyy"),
+            warrantyExp: format(new Date(parseInt(warrantyExp)), "MM/dd/yyyy"),
+          },
+        });
+      }
+      run(customer_info);
     } else {
-      console.log("MISSING WARRANTY DURATION");
     }
   },
   async getAll(table) {
@@ -106,25 +115,5 @@ const DatabaseService = {
     return data;
   },
 };
-
-customer = {
-  "owner-email": "test@gmail.com",
-  "owner-name": "test test",
-  origin: "shopify",
-  "product-name": "thing",
-  "product-id": "thing",
-};
-
-// DatabaseService.writeProductToTable("boo", "boo");
-// DatabaseService.getProductToAddWarranty("boo", 5);
-// DatabaseService.addCustomerRegistration(customer);
-// const list = async () => {
-//   const list1 = await item.getBatchData({ TableName: "products" });
-//   const list2 = await item.getBatchData({ TableName: "warranty" });
-
-//   console.log(list1.Items, list2);
-// };
-
-// list();
 
 module.exports = DatabaseService;

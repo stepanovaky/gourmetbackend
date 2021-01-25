@@ -25,8 +25,6 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
-// fetch();
-
 app.get("/", (req, res) => {
   res.send("Hello, world!");
 });
@@ -43,25 +41,14 @@ app.use(
 );
 
 app.post("/api/product", jsonParser, async (req, res, next) => {
-  //6527e5de7b0af7ed393d7b8b842c7bfdca463ed4d797a8318c7763de5b0e9e88
-  //for authentication purposes
-  console.log(req.body);
-  console.log(req.body.id);
-  console.log(req.body.title);
+  res.status(200).json({ message: "product went through" });
   DatabaseService.writeProductToTable(req.body.id, req.body.title);
-  //CODE TO SEND THIS DATA TO DYNAMODB TO THE TABLE LISTED PRODUCTS
-
-  res.status(200);
 });
 
 app.post("/api/shopify/order", jsonParser, async (req, res) => {
-  // console.log(req.body);
   res.status(200).json({ message: "order went through" });
   req.body.line_items.map((item) => {
-    console.log(req.body.customer);
-
     if (req.body.customer.email !== null) {
-      console.log(req.body.customer.email, "this right here");
       const customer_info = {
         "owner-email": req.body.customer.email,
         "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
@@ -70,21 +57,11 @@ app.post("/api/shopify/order", jsonParser, async (req, res) => {
       };
       try {
         DatabaseService.addCustomerRegistration(customer_info);
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) {}
     } else {
-      console.log("MISSING EMAIL");
     }
   });
-
-  //NOT FULLY TESTED, NEED INTERFACE, AND TO ADD WARRANTIES
 });
-
-//WEBHOOK EVERY TIME PRODUCT IS PURCHASED FROM SHOPIFY GOURMET EASY STORE
-//ADD DIRECTLY TO WARRANTIES TABLE **IF WARRANTY EXISTS, IF NOT REJECT AND NOTIFY CLIENT**
-//ADD PRODUCT_ID, OWNER-NAME, OWNER-EMAIL, BOUGHT-FROM SHOPIFY, PRODUCT NAME, WARRANTY DURATION,
-//START OF WARRANTY
 
 app.use(function errorHandler(error, req, res, next) {
   let response;
