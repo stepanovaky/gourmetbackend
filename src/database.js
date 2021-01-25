@@ -72,7 +72,7 @@ class database {
 //   AttributeDefinitions: [
 //     {
 //       AttributeName: "product-id", //ATTRIBUTE_NAME_1
-//       AttributeType: "S", //ATTRIBUTE_TYPE
+//       AttributeType: "N", //ATTRIBUTE_TYPE
 //     },
 //     {
 //       AttributeName: "warranty-exp",
@@ -94,6 +94,38 @@ class database {
 //     WriteCapacityUnits: 1,
 //   },
 //   TableName: "warranty", //TABLE_NAME
+//   StreamSpecification: {
+//     StreamEnabled: false,
+//   },
+// };
+// const run = async () => {
+//   try {
+//     const data = await dbclient.send(new CreateTableCommand(params));
+//     console.log("Table Created", data);
+//   } catch (err) {
+//     console.log("Error", err);
+//   }
+// };
+// run();
+
+// const params = {
+//   AttributeDefinitions: [
+//     {
+//       AttributeName: "product-id", //ATTRIBUTE_NAME_1
+//       AttributeType: "N", //ATTRIBUTE_TYPE
+//     },
+//   ],
+//   KeySchema: [
+//     {
+//       AttributeName: "product-id", //ATTRIBUTE_NAME_1
+//       KeyType: "HASH",
+//     },
+//   ],
+//   ProvisionedThroughput: {
+//     ReadCapacityUnits: 1,
+//     WriteCapacityUnits: 1,
+//   },
+//   TableName: "products", //TABLE_NAME
 //   StreamSpecification: {
 //     StreamEnabled: false,
 //   },
