@@ -70,7 +70,7 @@ class database {
 //   }
 // }
 
-const params = {
+const params1 = {
   AttributeDefinitions: [
     {
       AttributeName: "product-id", //ATTRIBUTE_NAME_1
@@ -102,7 +102,7 @@ const params = {
 };
 const run = async () => {
   try {
-    const data = await dbclient.send(new CreateTableCommand(params));
+    const data = await dbclient.send(new CreateTableCommand(params1));
     console.log("Table Created", data);
   } catch (err) {
     console.log("Error", err);
