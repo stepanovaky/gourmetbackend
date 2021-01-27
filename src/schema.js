@@ -219,7 +219,7 @@ const RootMutationType = new GraphQLObjectType({
         const customer_info = {
           "owner-email": args.ownerEmail,
           "owner-name": args.ownerName,
-          origin: "amazon",
+          origin: "Amazon",
           "product-id": args.productId,
           "amazon-order-id": args.amazonOrderId,
         };

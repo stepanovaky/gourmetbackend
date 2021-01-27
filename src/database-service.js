@@ -21,7 +21,7 @@ const DatabaseService = {
   async getProductToAddWarranty(id, duration) {
     const params = {
       TableName: "products",
-      Key: { "product-id": { N: id } },
+      Key: { "product-id": { N: `${id}` } },
       UpdateExpression: `SET #name =  :value`,
       ExpressionAttributeNames: {
         "#name": "warranty-duration",
@@ -44,46 +44,84 @@ const DatabaseService = {
       },
     };
 
-    const data = await item.getDataSingle(paramsToRead);
+    const data = await item.getDataSingle(paramsToRead).then((res) => {
+      if (
+        res.Item["warranty-duration"] &&
+        res.Item["warranty-duration"].N > 0
+      ) {
+        const addAmount = res.Item["warranty-duration"].N;
+        const warrantyExp = addYears(new Date(), addAmount).getTime();
 
-    //add conditional to check if warranty-duration exists
-
-    if (
-      data.Item["warranty-duration"] &&
-      data.Item["warranty-duration"].N > 0
-    ) {
-      const addAmount = data.Item["warranty-duration"].N;
-      const warrantyExp = addYears(new Date(), addAmount).getTime();
-
-      const paramsToWrite = {
-        TableName: "warranty",
-        Item: {
-          "product-id": { N: data.Item["product-id"].N },
-          "product-name": { S: data.Item["product-name"].S },
-          "warranty-exp": { S: `${warrantyExp}` },
-          "warranty-start": { S: `${new Date().getTime()}` },
-          "owner-email": { S: customer_info["owner-email"] },
-          "owner-name": { S: customer_info["owner-name"] },
-          origin: { S: customer_info["origin"] },
-        },
-      };
-      item.writeNewData(paramsToWrite);
-      async function run(customer_info) {
-        email.send({
-          template: "warranty",
-          message: {
-            to: customer_info["owner-email"],
+        const paramsToWrite = {
+          TableName: "warranty",
+          Item: {
+            "product-id": { N: `${res.Item["product-id"].N}` },
+            "product-name": { S: res.Item["product-name"].S },
+            "warranty-exp": { S: `${warrantyExp}` },
+            "warranty-start": { S: `${new Date().getTime()}` },
+            "owner-email": { S: customer_info["owner-email"] },
+            "owner-name": { S: customer_info["owner-name"] },
+            origin: { S: customer_info["origin"] },
           },
-          locals: {
-            productName: customer_info["product-name"],
-            warrantyStart: format(new Date(), "MM/dd/yyyy"),
-            warrantyExp: format(new Date(parseInt(warrantyExp)), "MM/dd/yyyy"),
-          },
-        });
+        };
+        item.writeNewData(paramsToWrite);
+        async function run(customer_info) {
+          email.send({
+            template: "warranty",
+            message: {
+              to: customer_info["owner-email"],
+            },
+            locals: {
+              productName: customer_info["product-name"],
+              warrantyStart: format(new Date(), "MM/dd/yyyy"),
+              warrantyExp: format(
+                new Date(parseInt(warrantyExp)),
+                "MM/dd/yyyy"
+              ),
+            },
+          });
+        }
+        run(customer_info);
+      } else {
       }
-      run(customer_info);
-    } else {
-    }
+    });
+
+    // if (
+    //   data.Item["warranty-duration"] &&
+    //   data.Item["warranty-duration"].N > 0
+    // ) {
+    //   const addAmount = data.Item["warranty-duration"].N;
+    //   const warrantyExp = addYears(new Date(), addAmount).getTime();
+
+    //   const paramsToWrite = {
+    //     TableName: "warranty",
+    //     Item: {
+    //       "product-id": { N: data.Item["product-id"].N },
+    //       "product-name": { S: data.Item["product-name"].S },
+    //       "warranty-exp": { S: `${warrantyExp}` },
+    //       "warranty-start": { S: `${new Date().getTime()}` },
+    //       "owner-email": { S: customer_info["owner-email"] },
+    //       "owner-name": { S: customer_info["owner-name"] },
+    //       origin: { S: customer_info["origin"] },
+    //     },
+    //   };
+    //   item.writeNewData(paramsToWrite);
+    //   async function run(customer_info) {
+    //     email.send({
+    //       template: "warranty",
+    //       message: {
+    //         to: customer_info["owner-email"],
+    //       },
+    //       locals: {
+    //         productName: customer_info["product-name"],
+    //         warrantyStart: format(new Date(), "MM/dd/yyyy"),
+    //         warrantyExp: format(new Date(parseInt(warrantyExp)), "MM/dd/yyyy"),
+    //       },
+    //     });
+    //   }
+    //   run(customer_info);
+    // } else {
+    // }
   },
   async getAll(table) {
     params = {

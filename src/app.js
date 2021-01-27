@@ -17,13 +17,13 @@ const morganOption = NODE_ENV === "production" ? "tiny" : "common";
 app.use(morgan(morganOption));
 // app.use(helmet()); TURN ON FOR PRODUCTION!!!!!!!!!!!!!!!!!!
 
-const corsOptions = {
-  origin: [
-    "https://muscled-store.myshopify.com",
-    "https://d0c23edbb2c1.ngrok.io",
-  ],
-  optionsSuccessStatus: 200,
-};
+// const corsOptions = {
+//   origin: [
+//     "https://muscled-store.myshopify.com",
+//     "https://e036ba913686.ngrok.io",
+//   ],
+//   optionsSuccessStatus: 200,
+// };
 
 app.get("/", (req, res) => {
   res.send("Hello, world!");
@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
 app.use(
   "/graphql",
   jsonParser,
-  cors(corsOptions),
+  cors(),
   graphqlHTTP((req) => ({
     schema: schema,
     graphiql: true,
@@ -52,7 +52,7 @@ app.post("/api/shopify/order", jsonParser, async (req, res) => {
       const customer_info = {
         "owner-email": req.body.customer.email,
         "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
-        origin: "shopify",
+        origin: "Shopify",
         "product-id": item.product_id,
       };
       try {
