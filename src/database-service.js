@@ -1,7 +1,8 @@
 require("dotenv").config();
 var addYears = require("date-fns/addYears");
 const database = require("./database");
-
+const email = require("./nodemailer");
+const { format } = require("date-fns");
 const item = new database();
 
 const DatabaseService = {
@@ -9,9 +10,9 @@ const DatabaseService = {
     const params = {
       TableName: "products",
       Item: {
-        "product-id": { S: `${id}` },
-        "product-name": { S: name },
-        "warranty-duration": { N: 0 },
+        "product-id": { N: `${id}` },
+        "product-name": { S: `${name}` },
+        "warranty-duration": { N: `${0}` },
       },
     };
 
@@ -20,7 +21,7 @@ const DatabaseService = {
   async getProductToAddWarranty(id, duration) {
     const params = {
       TableName: "products",
-      Key: { "product-id": { S: `${id}` } },
+      Key: { "product-id": { N: `${id}` } },
       UpdateExpression: `SET #name =  :value`,
       ExpressionAttributeNames: {
         "#name": "warranty-duration",
@@ -36,45 +37,91 @@ const DatabaseService = {
     //here comes code to check if the item was actually sold on amazon
     //customer_info.amazonOrderId
 
-    console.log(customer_info["product-id"]);
-
     const paramsToRead = {
       TableName: "products",
       Key: {
-        "product-id": { S: `${customer_info["product-id"]}` },
+        "product-id": { N: `${customer_info["product-id"]}` },
       },
     };
 
-    const data = await item.getDataSingle(paramsToRead);
+    const data = await item.getDataSingle(paramsToRead).then((res) => {
+      if (
+        res.Item["warranty-duration"] &&
+        res.Item["warranty-duration"].N > 0
+      ) {
+        const addAmount = res.Item["warranty-duration"].N;
+        const warrantyExp = addYears(new Date(), addAmount).getTime();
 
-    //add conditional to check if warranty-duration exists
+        const paramsToWrite = {
+          TableName: "warranty",
+          Item: {
+            "product-id": { N: `${res.Item["product-id"].N}` },
+            "product-name": { S: res.Item["product-name"].S },
+            "warranty-exp": { S: `${warrantyExp}` },
+            "warranty-start": { S: `${new Date().getTime()}` },
+            "owner-email": { S: customer_info["owner-email"] },
+            "owner-name": { S: customer_info["owner-name"] },
+            origin: { S: customer_info["origin"] },
+          },
+        };
+        item.writeNewData(paramsToWrite);
+        async function run(customer_info) {
+          email.send({
+            template: "warranty",
+            message: {
+              to: customer_info["owner-email"],
+            },
+            locals: {
+              productName: customer_info["product-name"],
+              warrantyStart: format(new Date(), "MM/dd/yyyy"),
+              warrantyExp: format(
+                new Date(parseInt(warrantyExp)),
+                "MM/dd/yyyy"
+              ),
+            },
+          });
+        }
+        run(customer_info);
+      } else {
+      }
+    });
 
-    console.log(data.Item["warranty-duration"], "item");
+    // if (
+    //   data.Item["warranty-duration"] &&
+    //   data.Item["warranty-duration"].N > 0
+    // ) {
+    //   const addAmount = data.Item["warranty-duration"].N;
+    //   const warrantyExp = addYears(new Date(), addAmount).getTime();
 
-    if (
-      data.Item["warranty-duration"] &&
-      data.Item["warranty-duration"].N > 0
-    ) {
-      console.log(data.Item["warranty-duration"].N, "this far");
-      const addAmount = data.Item["warranty-duration"].N;
-      const warrantyExp = addYears(new Date(), addAmount).getTime();
-
-      const paramsToWrite = {
-        TableName: "warranty",
-        Item: {
-          "product-id": { S: data.Item["product-id"].S },
-          "product-name": { S: data.Item["product-name"].S },
-          "warranty-exp": { S: `${warrantyExp}` },
-          "warranty-start": { S: `${new Date().getTime()}` },
-          "owner-email": { S: customer_info["owner-email"] },
-          "owner-name": { S: customer_info["owner-name"] },
-          origin: { S: customer_info["origin"] },
-        },
-      };
-      item.writeNewData(paramsToWrite);
-    } else {
-      console.log("MISSING WARRANTY DURATION");
-    }
+    //   const paramsToWrite = {
+    //     TableName: "warranty",
+    //     Item: {
+    //       "product-id": { N: data.Item["product-id"].N },
+    //       "product-name": { S: data.Item["product-name"].S },
+    //       "warranty-exp": { S: `${warrantyExp}` },
+    //       "warranty-start": { S: `${new Date().getTime()}` },
+    //       "owner-email": { S: customer_info["owner-email"] },
+    //       "owner-name": { S: customer_info["owner-name"] },
+    //       origin: { S: customer_info["origin"] },
+    //     },
+    //   };
+    //   item.writeNewData(paramsToWrite);
+    //   async function run(customer_info) {
+    //     email.send({
+    //       template: "warranty",
+    //       message: {
+    //         to: customer_info["owner-email"],
+    //       },
+    //       locals: {
+    //         productName: customer_info["product-name"],
+    //         warrantyStart: format(new Date(), "MM/dd/yyyy"),
+    //         warrantyExp: format(new Date(parseInt(warrantyExp)), "MM/dd/yyyy"),
+    //       },
+    //     });
+    //   }
+    //   run(customer_info);
+    // } else {
+    // }
   },
   async getAll(table) {
     params = {
@@ -87,7 +134,7 @@ const DatabaseService = {
     const params = {
       TableName: "products",
       Key: {
-        "product-id": { S: id },
+        "product-id": { N: id },
       },
     };
 
@@ -106,25 +153,5 @@ const DatabaseService = {
     return data;
   },
 };
-
-customer = {
-  "owner-email": "test@gmail.com",
-  "owner-name": "test test",
-  origin: "shopify",
-  "product-name": "thing",
-  "product-id": "thing",
-};
-
-// DatabaseService.writeProductToTable("boo", "boo");
-// DatabaseService.getProductToAddWarranty("boo", 5);
-// DatabaseService.addCustomerRegistration(customer);
-// const list = async () => {
-//   const list1 = await item.getBatchData({ TableName: "products" });
-//   const list2 = await item.getBatchData({ TableName: "warranty" });
-
-//   console.log(list1.Items, list2);
-// };
-
-// list();
 
 module.exports = DatabaseService;

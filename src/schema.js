@@ -13,7 +13,7 @@ const ProductType = new GraphQLObjectType({
   name: "products",
   description: "This represents all of the products in the Gourmet Easy Store",
   fields: () => ({
-    productId: { type: GraphQLNonNull(GraphQLString) },
+    productId: { type: GraphQLNonNull(GraphQLFloat) },
     productName: { type: GraphQLNonNull(GraphQLString) },
     warrantyDuration: { type: GraphQLInt },
   }),
@@ -40,14 +40,13 @@ const CustomerType = new GraphQLObjectType({
           (warranty) => warranty["owner-email"].S === parent.ownerEmail
         );
         const serializeWarranties = specificWarranties.map((item) => {
-          const productId = item["product-id"].S;
+          const productId = item["product-id"].N;
           const productName = item["product-name"].S;
           const warrantyExp = item["warranty-exp"].S;
           const warrantyStart = item["warranty-start"].S;
 
           // const origin = item.origin.S;
 
-          console.log(warrantyExp);
           return {
             productId,
             productName,
@@ -55,7 +54,6 @@ const CustomerType = new GraphQLObjectType({
             warrantyStart,
           };
         });
-        console.log(serializeWarranties);
         return serializeWarranties;
       },
     },
@@ -67,41 +65,35 @@ const WarrantyType = new GraphQLObjectType({
   description:
     "This represents all of the registered warranties in the Gourmet Easy Store",
   fields: () => ({
-    productId: { type: GraphQLNonNull(GraphQLString) },
-    productName: { type: GraphQLNonNull(GraphQLString) },
-    warrantyExp: { type: GraphQLNonNull(GraphQLString) },
-    warrantyStart: { type: GraphQLNonNull(GraphQLString) },
+    productId: { type: GraphQLNonNull(GraphQLFloat) },
+    productName: { type: GraphQLString },
+    warrantyExp: { type: GraphQLString },
+    warrantyStart: { type: GraphQLString },
     ownerEmail: { type: GraphQLNonNull(GraphQLString) },
     ownerName: { type: GraphQLNonNull(GraphQLString) },
-    origin: { type: GraphQLNonNull(GraphQLString) },
+    origin: { type: GraphQLString },
+    amazonOrderId: { type: GraphQLString },
   }),
 });
-
-//considerations: 'get all products that have warranties'
-//not necessary but for future
 
 const RootQueryType = new GraphQLObjectType({
   name: "query",
   description: "root query",
   fields: () => ({
     oneWarranty: {
-      //in dynamodb this will be accomplished
-      //with product-id + warranty-exp
       type: WarrantyType,
       description: "Find specific warranty",
       resolve: () => warranty,
     },
-    //maybe make this a subset of allwarranties
 
     allWarranties: {
       type: new GraphQLList(WarrantyType),
       description: "Find specific product",
       resolve: async () => {
         const item = await DatabaseService.getAll("warranty");
-        console.log(item);
         const warrantyList = [];
         item.Items.map((item) => {
-          const productId = item["product-id"].S;
+          const productId = item["product-id"].N;
           const productName = item["product-name"].S;
           const warrantyExp = item["warranty-exp"].S;
           const warrantyStart = item["warranty-start"].S;
@@ -129,7 +121,7 @@ const RootQueryType = new GraphQLObjectType({
         const item = await DatabaseService.getAll("products");
         const productList = [];
         item.Items.map((item) => {
-          const productId = item["product-id"].S;
+          const productId = item["product-id"].N;
           const productName = item["product-name"].S;
           const warrantyDuration = item["warranty-duration"]
             ? item["warranty-duration"].N
@@ -139,34 +131,26 @@ const RootQueryType = new GraphQLObjectType({
         return productList;
       },
     },
-    //just look up product-id
     oneProduct: {
       type: new GraphQLList(ProductType),
       description: "Find specific product",
       args: {
-        id: { type: GraphQLString },
+        id: { type: GraphQLFloat },
       },
       resolve: async (parent, args) => {
         const items = await DatabaseService.getOneProduct(args.id);
         const warrantyDuration = await items.Item["warranty-duration"].N;
-        const productId = await items.Item["product-id"].S;
+        const productId = await items.Item["product-id"].N;
         const productName = await items.Item["product-name"].S;
         return [{ warrantyDuration, productId, productName }];
       },
-
-      //so here i need to figure out how to extract
-      //product ID and duration from the post request,
-      //pass that into
-      //DatabaseService.getProductToAddWarranty(id, duration)
     },
-    //maybe make this a subset of allproducts
 
     allCustomers: {
       type: new GraphQLList(CustomerType),
       description: "Find specific customers",
       resolve: async () => {
         const items = await DatabaseService.getAll("warranty");
-        // console.log(items);
         const customers = [];
         const mapCustomers = items.Items.map((item) => {
           if (!customers.includes(item)) {
@@ -187,8 +171,6 @@ const RootQueryType = new GraphQLObjectType({
       },
       resolve: async (parent, args) => {
         const items = await DatabaseService.getAll("warranty");
-        // const thing = await DatabaseService.getOneCustomer();
-        console.log(items);
       },
     },
   }),
@@ -203,7 +185,8 @@ const RootMutationType = new GraphQLObjectType({
       description: "add a product",
       args: {
         productName: { type: GraphQLNonNull(GraphQLString) },
-        productId: { type: GraphQLNonNull(GraphQLString) },
+        productId: { type: GraphQLNonNull(GraphQLInt) },
+        amazonOrderId: { type: GraphQLNonNull(GraphQLString) },
       },
       resolve: async (parent, args) => {
         DatabaseService.writeProductToTable(args.productId, args.productName);
@@ -217,21 +200,34 @@ const RootMutationType = new GraphQLObjectType({
         warrantyDuration: { type: GraphQLNonNull(GraphQLInt) },
       },
       resolve: async (parent, args) => {
-        console.log("boooo", args);
         DatabaseService.getProductToAddWarranty(
           args.productId,
           args.warrantyDuration
         );
       },
     },
-    // addWarrantyToProduct: {},
+    addCustomerRegistration: {
+      type: WarrantyType,
+      description: "Create warranty for product",
+      args: {
+        productId: { type: GraphQLNonNull(GraphQLFloat) },
+        ownerEmail: { type: GraphQLNonNull(GraphQLString) },
+        ownerName: { type: GraphQLNonNull(GraphQLString) },
+        amazonOrderId: { type: GraphQLNonNull(GraphQLString) },
+      },
+      resolve: async (parent, args) => {
+        const customer_info = {
+          "owner-email": args.ownerEmail,
+          "owner-name": args.ownerName,
+          origin: "Amazon",
+          "product-id": args.productId,
+          "amazon-order-id": args.amazonOrderId,
+        };
+        DatabaseService.addCustomerRegistration(customer_info);
+      },
+    },
   }),
 });
-
-//here i need to figure out how to add a 'mutations' thing
-//to the rootquerytype so that it will create a prelim product
-
-//
 
 const schema = new GraphQLSchema({
   query: RootQueryType,
