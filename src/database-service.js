@@ -154,4 +154,6 @@ const DatabaseService = {
   },
 };
 
+DatabaseService.writeProductToTable(6128619323542, "Bundle C");
+
 module.exports = DatabaseService;
