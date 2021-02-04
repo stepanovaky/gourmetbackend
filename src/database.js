@@ -71,77 +71,77 @@ class database {
 //   }
 // }
 
-const params1 = {
-  AttributeDefinitions: [
-    {
-      AttributeName: "product-id", //ATTRIBUTE_NAME_1
-      AttributeType: "N", //ATTRIBUTE_TYPE
-    },
-    {
-      AttributeName: "warranty-exp",
-      AttributeType: "S",
-    },
-  ],
-  KeySchema: [
-    {
-      AttributeName: "product-id", //ATTRIBUTE_NAME_1
-      KeyType: "HASH",
-    },
-    {
-      AttributeName: "warranty-exp",
-      KeyType: "RANGE",
-    },
-  ],
-  ProvisionedThroughput: {
-    ReadCapacityUnits: 1,
-    WriteCapacityUnits: 1,
-  },
-  TableName: "warranty", //TABLE_NAME
-  StreamSpecification: {
-    StreamEnabled: false,
-  },
-};
-const run = async () => {
-  try {
-    const data = await dbclient.send(new CreateTableCommand(params1));
-    console.log("Table Created", data);
-  } catch (err) {
-    console.log("Error", err);
-  }
-};
-run();
+// const params1 = {
+//   AttributeDefinitions: [
+//     {
+//       AttributeName: "product-id", //ATTRIBUTE_NAME_1
+//       AttributeType: "N", //ATTRIBUTE_TYPE
+//     },
+//     {
+//       AttributeName: "warranty-exp",
+//       AttributeType: "S",
+//     },
+//   ],
+//   KeySchema: [
+//     {
+//       AttributeName: "product-id", //ATTRIBUTE_NAME_1
+//       KeyType: "HASH",
+//     },
+//     {
+//       AttributeName: "warranty-exp",
+//       KeyType: "RANGE",
+//     },
+//   ],
+//   ProvisionedThroughput: {
+//     ReadCapacityUnits: 1,
+//     WriteCapacityUnits: 1,
+//   },
+//   TableName: "warranty", //TABLE_NAME
+//   StreamSpecification: {
+//     StreamEnabled: false,
+//   },
+// };
+// const run = async () => {
+//   try {
+//     const data = await dbclient.send(new CreateTableCommand(params1));
+//     console.log("Table Created", data);
+//   } catch (err) {
+//     console.log("Error", err);
+//   }
+// };
+// run();
 
-const params = {
-  AttributeDefinitions: [
-    {
-      AttributeName: "product-id", //ATTRIBUTE_NAME_1
-      AttributeType: "N", //ATTRIBUTE_TYPE
-    },
-  ],
-  KeySchema: [
-    {
-      AttributeName: "product-id", //ATTRIBUTE_NAME_1
-      KeyType: "HASH",
-    },
-  ],
-  ProvisionedThroughput: {
-    ReadCapacityUnits: 1,
-    WriteCapacityUnits: 1,
-  },
-  TableName: "products", //TABLE_NAME
-  StreamSpecification: {
-    StreamEnabled: false,
-  },
-};
-const run1 = async () => {
-  try {
-    const data = await dbclient.send(new CreateTableCommand(params));
-    console.log("Table Created", data);
-  } catch (err) {
-    console.log("Error", err);
-  }
-};
-run1();
+// const params = {
+//   AttributeDefinitions: [
+//     {
+//       AttributeName: "product-id", //ATTRIBUTE_NAME_1
+//       AttributeType: "N", //ATTRIBUTE_TYPE
+//     },
+//   ],
+//   KeySchema: [
+//     {
+//       AttributeName: "product-id", //ATTRIBUTE_NAME_1
+//       KeyType: "HASH",
+//     },
+//   ],
+//   ProvisionedThroughput: {
+//     ReadCapacityUnits: 1,
+//     WriteCapacityUnits: 1,
+//   },
+//   TableName: "products", //TABLE_NAME
+//   StreamSpecification: {
+//     StreamEnabled: false,
+//   },
+// };
+// const run1 = async () => {
+//   try {
+//     const data = await dbclient.send(new CreateTableCommand(params));
+//     console.log("Table Created", data);
+//   } catch (err) {
+//     console.log("Error", err);
+//   }
+// };
+// run1();
 
 // var params = {
 //   TableName: "warranty",
