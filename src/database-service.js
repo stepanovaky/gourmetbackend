@@ -66,6 +66,7 @@ const DatabaseService = {
             amazonOrderId: { S: customer_info["amazon-order-id"] },
           },
         };
+        console.log(paramsToWrite);
         item.writeNewData(paramsToWrite);
         if (customer_info["approval"] === "approved") {
           async function run(customer_info) {

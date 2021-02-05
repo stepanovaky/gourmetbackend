@@ -102,7 +102,7 @@ const RootQueryType = new GraphQLObjectType({
           const ownerEmail = item["owner-email"] ? item["owner-email"].S : "";
           const ownerName = item["owner-name"].S;
           const origin = item.origin ? item.origin.S : "";
-          const approval = item["approval"];
+          const approval = item["approval"].S;
 
           warrantyList.push({
             productId,
