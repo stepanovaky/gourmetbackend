@@ -7,6 +7,7 @@ var {
   GraphQLNonNull,
   GraphQLFloat,
 } = require("graphql");
+const database = require("./database");
 const DatabaseService = require("./database-service");
 
 const ProductType = new GraphQLObjectType({
@@ -73,6 +74,7 @@ const WarrantyType = new GraphQLObjectType({
     ownerName: { type: GraphQLNonNull(GraphQLString) },
     origin: { type: GraphQLString },
     amazonOrderId: { type: GraphQLString },
+    approval: { type: GraphQLString },
   }),
 });
 
@@ -100,6 +102,7 @@ const RootQueryType = new GraphQLObjectType({
           const ownerEmail = item["owner-email"] ? item["owner-email"].S : "";
           const ownerName = item["owner-name"].S;
           const origin = item.origin ? item.origin.S : "";
+          const approval = item["approval"];
 
           warrantyList.push({
             productId,
@@ -109,6 +112,7 @@ const RootQueryType = new GraphQLObjectType({
             ownerEmail,
             ownerName,
             origin,
+            approval,
           });
         });
         return warrantyList;
@@ -119,8 +123,10 @@ const RootQueryType = new GraphQLObjectType({
       description: "Find specific product",
       resolve: async () => {
         const item = await DatabaseService.getAll("products");
+
         const productList = [];
         item.Items.map((item) => {
+          console.log(item);
           const productId = item["product-id"].N;
           const productName = item["product-name"].S;
           const warrantyDuration = item["warranty-duration"]
@@ -220,10 +226,37 @@ const RootMutationType = new GraphQLObjectType({
           "owner-email": args.ownerEmail,
           "owner-name": args.ownerName,
           origin: "Amazon",
+          approval: "pending",
           "product-id": args.productId,
           "amazon-order-id": args.amazonOrderId,
         };
         DatabaseService.addCustomerRegistration(customer_info);
+      },
+    },
+    addWarrantyApproval: {
+      type: WarrantyType,
+      description: "Approve warranty",
+      args: {
+        productId: { type: GraphQLNonNull(GraphQLFloat) },
+        warrantyExp: { type: GraphQLNonNull(GraphQLString) },
+      },
+      resolve: async (parent, args) => {
+        DatabaseService.approveWarranty(args.warrantyExp, args.productId);
+        //code to update database's approval to approved,
+        //probably send an email after
+      },
+    },
+    warrantyDenied: {
+      type: WarrantyType,
+      description: "Deny warranty",
+      args: {
+        productId: { type: GraphQLNonNull(GraphQLFloat) },
+        warrantyExp: { type: GraphQLNonNull(GraphQLString) },
+      },
+      resolve: async (parent, args) => {
+        DatabaseService.deleteWarranty(args.warrantyExp, args.productId);
+        //code to remove warranty
+        //email?
       },
     },
   }),

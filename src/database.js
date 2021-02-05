@@ -53,6 +53,24 @@ class database {
       return data;
     } catch (err) {}
   }
+
+  async approveWarranty(params) {
+    //code to update item in database
+    try {
+      const data = await dbclient.send(new UpdateItemCommand(params));
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async deleteWarranty(params) {
+    //code to delete item in database
+    try {
+      const data = await dbclient.send(new DeleteItemCommand(params));
+    } catch (err) {
+      console.error(err);
+    }
+  }
 }
 
 // const params = {
@@ -97,6 +115,46 @@ class database {
 //     WriteCapacityUnits: 1,
 //   },
 //   TableName: "warranty", //TABLE_NAME
+//   StreamSpecification: {
+//     StreamEnabled: false,
+//   },
+// };
+// const run = async () => {
+//   try {
+//     const data = await dbclient.send(new CreateTableCommand(params1));
+//     console.log("Table Created", data);
+//   } catch (err) {
+//     console.log("Error", err);
+//   }
+// };
+// run();
+
+// const params1 = {
+//   AttributeDefinitions: [
+//     {
+//       AttributeName: "product-id", //ATTRIBUTE_NAME_1
+//       AttributeType: "N", //ATTRIBUTE_TYPE
+//     },
+//     {
+//       AttributeName: "warranty-exp",
+//       AttributeType: "S",
+//     },
+//   ],
+//   KeySchema: [
+//     {
+//       AttributeName: "product-id", //ATTRIBUTE_NAME_1
+//       KeyType: "HASH",
+//     },
+//     {
+//       AttributeName: "warranty-exp",
+//       KeyType: "RANGE",
+//     },
+//   ],
+//   ProvisionedThroughput: {
+//     ReadCapacityUnits: 1,
+//     WriteCapacityUnits: 1,
+//   },
+//   TableName: "amazon-warranty", //TABLE_NAME
 //   StreamSpecification: {
 //     StreamEnabled: false,
 //   },

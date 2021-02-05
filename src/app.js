@@ -53,7 +53,9 @@ app.post("/api/shopify/order", jsonParser, async (req, res) => {
         "owner-email": req.body.customer.email,
         "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
         origin: "Shopify",
+        approval: "approved",
         "product-id": item.product_id,
+        amazonOrderId: "none",
       };
       try {
         DatabaseService.addCustomerRegistration(customer_info);

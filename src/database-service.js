@@ -62,66 +62,34 @@ const DatabaseService = {
             "owner-email": { S: customer_info["owner-email"] },
             "owner-name": { S: customer_info["owner-name"] },
             origin: { S: customer_info["origin"] },
+            approval: { S: customer_info["approval"] },
+            amazonOrderId: { S: customer_info["amazonOrderId"] },
           },
         };
         item.writeNewData(paramsToWrite);
-        async function run(customer_info) {
-          email.send({
-            template: "warranty",
-            message: {
-              to: customer_info["owner-email"],
-            },
-            locals: {
-              productName: customer_info["product-name"],
-              warrantyStart: format(new Date(), "MM/dd/yyyy"),
-              warrantyExp: format(
-                new Date(parseInt(warrantyExp)),
-                "MM/dd/yyyy"
-              ),
-            },
-          });
+        if (customer_info["approval"] === "approved") {
+          async function run(customer_info) {
+            email.send({
+              template: "warranty",
+              message: {
+                to: customer_info["owner-email"],
+              },
+              locals: {
+                productName: customer_info["product-name"],
+                warrantyStart: format(new Date(), "MM/dd/yyyy"),
+                warrantyExp: format(
+                  new Date(parseInt(warrantyExp)),
+                  "MM/dd/yyyy"
+                ),
+              },
+            });
+          }
+        } else if (customer_info["approval"] === "pending") {
+          //send email to inform customer of pending warranty registration
         }
-        run(customer_info);
       } else {
       }
     });
-
-    // if (
-    //   data.Item["warranty-duration"] &&
-    //   data.Item["warranty-duration"].N > 0
-    // ) {
-    //   const addAmount = data.Item["warranty-duration"].N;
-    //   const warrantyExp = addYears(new Date(), addAmount).getTime();
-
-    //   const paramsToWrite = {
-    //     TableName: "warranty",
-    //     Item: {
-    //       "product-id": { N: data.Item["product-id"].N },
-    //       "product-name": { S: data.Item["product-name"].S },
-    //       "warranty-exp": { S: `${warrantyExp}` },
-    //       "warranty-start": { S: `${new Date().getTime()}` },
-    //       "owner-email": { S: customer_info["owner-email"] },
-    //       "owner-name": { S: customer_info["owner-name"] },
-    //       origin: { S: customer_info["origin"] },
-    //     },
-    //   };
-    //   item.writeNewData(paramsToWrite);
-    //   async function run(customer_info) {
-    //     email.send({
-    //       template: "warranty",
-    //       message: {
-    //         to: customer_info["owner-email"],
-    //       },
-    //       locals: {
-    //         productName: customer_info["product-name"],
-    //         warrantyStart: format(new Date(), "MM/dd/yyyy"),
-    //         warrantyExp: format(new Date(parseInt(warrantyExp)), "MM/dd/yyyy"),
-    //       },
-    //     });
-    //   }
-    //   run(customer_info);
-    // } else {
-    // }
   },
   async getAll(table) {
     params = {
@@ -152,8 +120,49 @@ const DatabaseService = {
     const data = await item.getDataSingle(params);
     return data;
   },
+  async approveWarranty(exp, id) {
+    //code to retrieve warranty information first to figure out where to send email
+    const params = {
+      TableName: "warranty",
+      key: {
+        "product-id": { N: `${id}` },
+        "warranty-exp": { S: exp },
+      },
+      UpdateExpression: "SET #name =  :value",
+      ExpressionAttributeNames: {
+        "#name:": "approval",
+      },
+      ExpressionAttributeValues: {
+        ":value": { S: "approved" },
+      },
+    };
+
+    item.approveWarranty(params);
+    //code to send email for approval
+  },
+  async deleteWarranty(exp, id) {
+    //retrieve warranty info first to figure out where to send email
+    const params = {
+      TableName: "warranty",
+      key: {
+        "product-id": { N: `${id}` },
+        "warranty-exp": { S: exp },
+      },
+    };
+    item.deleteWarranty(params);
+    //code to send email for deletion
+    //probably have to retrieve warranty info
+  },
 };
 
-DatabaseService.writeProductToTable(6128619323542, "Bundle C");
+// DatabaseService.writeProductToTable(6090272899222, "Y Peeler");
+
+// async function get() {
+//   const item = await DatabaseService.getAll("products");
+//   console.log(item);
+//   console.log(item.Items[1]);
+// }
+
+// get();
 
 module.exports = DatabaseService;
