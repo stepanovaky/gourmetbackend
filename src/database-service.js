@@ -63,7 +63,11 @@ const DatabaseService = {
             "owner-name": { S: customer_info["owner-name"] },
             origin: { S: customer_info["origin"] },
             approval: { S: customer_info["approval"] },
-            amazonOrderId: { S: customer_info["amazon-order-id"] },
+            amazonOrderId: {
+              S: customer_info["amazon-order-id"]
+                ? customer_info["amazon-order-id"]
+                : "none",
+            },
           },
         };
         console.log(paramsToWrite);
