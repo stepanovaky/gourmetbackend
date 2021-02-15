@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 var {
   GraphQLSchema,
   GraphQLObjectType,
@@ -7,7 +8,6 @@ var {
   GraphQLNonNull,
   GraphQLFloat,
 } = require("graphql");
-const database = require("./database");
 const DatabaseService = require("./database-service");
 
 const ProductType = new GraphQLObjectType({
@@ -35,7 +35,7 @@ const CustomerType = new GraphQLObjectType({
       args: {
         ownerEmail: { type: GraphQLString },
       },
-      resolve: async (parent, args) => {
+      resolve: async (parent) => {
         const allWarranties = await DatabaseService.getAll("warranty");
         const specificWarranties = allWarranties.Items.filter(
           (warranty) => warranty["owner-email"].S === parent.ownerEmail
@@ -158,7 +158,7 @@ const RootQueryType = new GraphQLObjectType({
       resolve: async () => {
         const items = await DatabaseService.getAll("warranty");
         const customers = [];
-        const mapCustomers = items.Items.map((item) => {
+         items.Items.map((item) => {
           if (!customers.includes(item)) {
             customers.push({
               ownerEmail: item["owner-email"].S,
@@ -175,8 +175,8 @@ const RootQueryType = new GraphQLObjectType({
       args: {
         ownerEmail: { type: GraphQLString },
       },
-      resolve: async (parent, args) => {
-        const items = await DatabaseService.getAll("warranty");
+      resolve: async () => {
+         await DatabaseService.getAll("warranty");
       },
     },
   }),

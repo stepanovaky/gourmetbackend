@@ -1,3 +1,5 @@
+/* eslint-disable no-empty */
+/* eslint-disable no-undef */
 require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
@@ -33,14 +35,14 @@ app.use(
   "/graphql",
   jsonParser,
   cors(),
-  graphqlHTTP((req) => ({
+  graphqlHTTP(() => ({
     schema: schema,
     graphiql: true,
     pretty: true,
   }))
 );
 
-app.post("/api/product", jsonParser, async (req, res, next) => {
+app.post("/api/product", jsonParser, async (req, res) => {
   res.status(200).json({ message: "product went through" });
   DatabaseService.writeProductToTable(req.body.id, req.body.title);
 });
@@ -65,7 +67,7 @@ app.post("/api/shopify/order", jsonParser, async (req, res) => {
   });
 });
 
-app.use(function errorHandler(error, req, res, next) {
+app.use(function errorHandler(error, req, res) {
   let response;
   if (NODE_ENV === "production") {
     response = { error: { message: "server error" } };

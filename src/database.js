@@ -1,8 +1,7 @@
+/* eslint-disable no-empty */
+/* eslint-disable no-undef */
 const {
   DynamoDBClient,
-  DeleteTableCommand,
-  CreateTableCommand,
-  ListTablesCommand,
   PutItemCommand,
   UpdateItemCommand,
   GetItemCommand,
@@ -33,7 +32,7 @@ class database {
 
   async updateData(params) {
     try {
-      const data = await dbclient.send(new UpdateItemCommand(params));
+       await dbclient.send(new UpdateItemCommand(params));
     } catch (err) {
       console.error(err);
     }
@@ -57,7 +56,7 @@ class database {
   async approveWarranty(params) {
     //code to update item in database
     try {
-      const data = await dbclient.send(new UpdateItemCommand(params));
+      await dbclient.send(new UpdateItemCommand(params));
     } catch (err) {
       console.error(err);
     }
@@ -66,7 +65,7 @@ class database {
   async deleteWarranty(params) {
     //code to delete item in database
     try {
-      const data = await dbclient.send(new DeleteItemCommand(params));
+      await dbclient.send(new DeleteItemCommand(params));
     } catch (err) {
       console.error(err);
     }

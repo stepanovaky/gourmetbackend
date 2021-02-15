@@ -1,5 +1,7 @@
+/* eslint-disable no-undef */
 require("dotenv").config();
 var addYears = require("date-fns/addYears");
+// eslint-disable-next-line no-undef
 const database = require("./database");
 const email = require("./nodemailer");
 const { format } = require("date-fns");
@@ -44,7 +46,7 @@ const DatabaseService = {
       },
     };
 
-    const data = await item.getDataSingle(paramsToRead).then((res) => {
+     await item.getDataSingle(paramsToRead).then((res) => {
       if (
         res.Item["warranty-duration"] &&
         res.Item["warranty-duration"].N > 0
@@ -73,6 +75,7 @@ const DatabaseService = {
         console.log(paramsToWrite);
         item.writeNewData(paramsToWrite);
         if (customer_info["approval"] === "approved") {
+          // eslint-disable-next-line no-inner-declarations
           async function run(customer_info) {
             email.send({
               template: "warranty",
@@ -89,9 +92,11 @@ const DatabaseService = {
               },
             });
           }
+          run()
         } else if (customer_info["approval"] === "pending") {
           //send email to inform customer of pending warranty registration
         }
+      // eslint-disable-next-line no-empty
       } else {
       }
     });

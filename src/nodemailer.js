@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 require("dotenv").config();
 const nodemailer = require("nodemailer");
 const Email = require("email-templates");

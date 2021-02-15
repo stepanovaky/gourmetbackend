@@ -29,11 +29,13 @@
     "express-graphql": "^0.12.0",
     "graphql": "^15.4.0",
     "helmet": "^4.1.1",
+    "jshint": "^2.12.0",
     "morgan": "^1.10.0",
     "nodemailer": "^6.4.17"
   },
   "devDependencies": {
     "chai": "^4.2.0",
+    "eslint": "^7.19.0",
     "mocha": "^8.1.3",
     "nodemon": "^2.0.4",
     "supertest": "^4.0.2"
