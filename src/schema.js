@@ -296,7 +296,7 @@ const RootMutationType = new GraphQLObjectType({
           from: SENDER_EMAIL,
           to: ownerEmail,
           subject: 'Product Warranty approved',
-          text: `Hi ${ownerName}. You warranty request for ${product.productName} was successfully approved.`
+          text: `Hi ${ownerEmail}. You warranty request for ${product.productName} was successfully approved.`
         };
         transporter.sendMail(mailOptions, (error, info) => {
           console.log(error ? error : `Email sent: ${info.response}`);
