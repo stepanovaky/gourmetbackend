@@ -237,7 +237,7 @@ const RootMutationType = new GraphQLObjectType({
       resolve: async (parent, args) => {
         const { ownerEmail, ownerName, productId, amazonOrderId } = args;
         const product = await Product.findOne({productId});
-        if (product) {
+        // if (product) {
           const warrantyStart = new Date();
           const warrantyExp = new Date(
             warrantyStart.getFullYear() + product.warrantyDuration,
@@ -267,8 +267,8 @@ const RootMutationType = new GraphQLObjectType({
             console.log(error ? error : `Email sent: ${info.response}`);
           });
           return warranty;
-        }
-        return null;
+        // }
+        // return null;
       },
     },
 
