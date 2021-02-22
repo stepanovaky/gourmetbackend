@@ -8,13 +8,25 @@ var {
   GraphQLNonNull,
   GraphQLFloat,
 } = require("graphql");
-const DatabaseService = require("./database-service");
+const nodemailer = require('nodemailer');
+const Product = require("./models/Product");
+const Warranty = require("./models/Warranty");
+const Customer = require("./models/Customer");
+const { SENDER_EMAIL, SENDER_PASSWORD } = require('./config');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: SENDER_EMAIL,
+    pass: SENDER_PASSWORD
+  }
+});
 
 const ProductType = new GraphQLObjectType({
   name: "products",
   description: "This represents all of the products in the Gourmet Easy Store",
   fields: () => ({
-    productId: { type: GraphQLNonNull(GraphQLFloat) },
+    productId: { type: GraphQLNonNull(GraphQLString) },
     productName: { type: GraphQLNonNull(GraphQLString) },
     warrantyDuration: { type: GraphQLInt },
   }),
@@ -36,18 +48,13 @@ const CustomerType = new GraphQLObjectType({
         ownerEmail: { type: GraphQLString },
       },
       resolve: async (parent) => {
-        const allWarranties = await DatabaseService.getAll("warranty");
-        const specificWarranties = allWarranties.Items.filter(
-          (warranty) => warranty["owner-email"].S === parent.ownerEmail
-        );
-        const serializeWarranties = specificWarranties.map((item) => {
-          const productId = item["product-id"].N;
-          const productName = item["product-name"].S;
-          const warrantyExp = item["warranty-exp"].S;
-          const warrantyStart = item["warranty-start"].S;
-
-          // const origin = item.origin.S;
-
+        const { ownerEmail } = parent;
+        const warranties = Warranty.find({ ownerEmail }).sort({ createdAt: -1 });
+        const serializeWarranties = warranties.map((item) => {
+          const productId = item.productId;
+          const productName = item.productName;
+          const warrantyExp = item.warrantyExp;
+          const warrantyStart = item.warrantyStart;
           return {
             productId,
             productName,
@@ -66,7 +73,7 @@ const WarrantyType = new GraphQLObjectType({
   description:
     "This represents all of the registered warranties in the Gourmet Easy Store",
   fields: () => ({
-    productId: { type: GraphQLNonNull(GraphQLFloat) },
+    productId: { type: GraphQLNonNull(GraphQLString) },
     productName: { type: GraphQLString },
     warrantyExp: { type: GraphQLString },
     warrantyStart: { type: GraphQLString },
@@ -92,49 +99,49 @@ const RootQueryType = new GraphQLObjectType({
       type: new GraphQLList(WarrantyType),
       description: "Find specific product",
       resolve: async () => {
-        const item = await DatabaseService.getAll("warranty");
-        const warrantyList = [];
-        item.Items.map((item) => {
-          const productId = item["product-id"].N;
-          const productName = item["product-name"].S;
-          const warrantyExp = item["warranty-exp"].S;
-          const warrantyStart = item["warranty-start"].S;
-          const ownerEmail = item["owner-email"] ? item["owner-email"].S : "";
-          const ownerName = item["owner-name"].S;
-          const origin = item.origin ? item.origin.S : "";
-          const approval = item["approval"].S;
-
-          warrantyList.push({
-            productId,
-            productName,
-            warrantyExp,
-            warrantyStart,
-            ownerEmail,
-            ownerName,
-            origin,
-            approval,
-          });
-        });
-        return warrantyList;
+        const warranties = await Warranty.find().sort({ createdAt: -1 });
+        return warranties;
       },
     },
+
+    approvedWarranties: {
+      type: new GraphQLList(WarrantyType),
+      description: "Find specific product",
+      resolve: async () => {
+        const warranties = await Warranty.find({ approval: 'approved' }).sort({ createdAt: -1 });
+        return warranties;
+      },
+    },
+
     allProducts: {
       type: new GraphQLList(ProductType),
       description: "Find specific product",
       resolve: async () => {
-        const item = await DatabaseService.getAll("products");
-
-        const productList = [];
-        item.Items.map((item) => {
-          console.log(item);
-          const productId = item["product-id"].N;
-          const productName = item["product-name"].S;
-          const warrantyDuration = item["warranty-duration"]
-            ? item["warranty-duration"].N
-            : 0;
-          productList.push({ productId, productName, warrantyDuration });
-        });
-        return productList;
+        // let params = [
+        //   {
+        //     productId: '6090276634774',
+        //     productName: 'Garlic Easy',
+        //     warrantyDuration: 2
+        //   },
+        //   {
+        //     productId: '6090278895766',
+        //     productName: 'Juicer',
+        //     warrantyDuration: 3
+        //   },
+        //   {
+        //     productId: '6090272899222',
+        //     productName: 'Y Peeler',
+        //     warrantyDuration: 5
+        //   },
+        // ];
+        // let product = new Product(params[0]);
+        // let product1 = new Product(params[1]);
+        // let product2 = new Product(params[2]);
+        // await product.save();
+        // await product1.save();
+        // await product2.save();
+        const products = await Product.find().sort({ createdAt: -1 });
+        return products;
       },
     },
     oneProduct: {
@@ -144,11 +151,10 @@ const RootQueryType = new GraphQLObjectType({
         id: { type: GraphQLFloat },
       },
       resolve: async (parent, args) => {
-        const items = await DatabaseService.getOneProduct(args.id);
-        const warrantyDuration = await items.Item["warranty-duration"].N;
-        const productId = await items.Item["product-id"].N;
-        const productName = await items.Item["product-name"].S;
-        return [{ warrantyDuration, productId, productName }];
+        const productId = args.id;
+        const product = await Product.findOne({productId});
+        const { productName, warrantyDuration } = product;
+        return [{ productId, productName, warrantyDuration }];
       },
     },
 
@@ -156,15 +162,12 @@ const RootQueryType = new GraphQLObjectType({
       type: new GraphQLList(CustomerType),
       description: "Find specific customers",
       resolve: async () => {
-        const items = await DatabaseService.getAll("warranty");
-        const customers = [];
-         items.Items.map((item) => {
-          if (!customers.includes(item)) {
-            customers.push({
-              ownerEmail: item["owner-email"].S,
-              ownerName: item["owner-name"].S,
-            });
-          }
+        const customersList = await Customer.find().sort({ createdAt: -1 });
+        const customers = customersList.filter(item => {
+          return {
+            ownerEmail: item.ownerEmail,
+            ownerName: item.ownerName,
+          };
         });
         return customers;
       },
@@ -176,7 +179,9 @@ const RootQueryType = new GraphQLObjectType({
         ownerEmail: { type: GraphQLString },
       },
       resolve: async () => {
-         await DatabaseService.getAll("warranty");
+        const { ownerEmail } = args;
+        const customer = await Customer.findOne({ownerEmail});
+        return customer;
       },
     },
   }),
@@ -191,70 +196,128 @@ const RootMutationType = new GraphQLObjectType({
       description: "add a product",
       args: {
         productName: { type: GraphQLNonNull(GraphQLString) },
-        productId: { type: GraphQLNonNull(GraphQLInt) },
+        productId: { type: GraphQLNonNull(GraphQLString) },
         amazonOrderId: { type: GraphQLNonNull(GraphQLString) },
       },
       resolve: async (parent, args) => {
-        DatabaseService.writeProductToTable(args.productId, args.productName);
+        const { productName, productId } = args;
+        const product = new Product({ productId, productName });
+        await product.save();
+        return product;
       },
     },
+
     addWarrantyToProduct: {
       type: ProductType,
       description: "Add warranty duration to product",
       args: {
-        productId: { type: GraphQLNonNull(GraphQLFloat) },
+        productId: { type: GraphQLNonNull(GraphQLString) },
         warrantyDuration: { type: GraphQLNonNull(GraphQLInt) },
       },
       resolve: async (parent, args) => {
-        DatabaseService.getProductToAddWarranty(
-          args.productId,
-          args.warrantyDuration
+        const { productId, warrantyDuration } = args;
+        const product = await Product.findOneAndUpdate(
+          { productId },
+          { warrantyDuration },
+          { new: true }
         );
+        return product;
       },
     },
+
     addCustomerRegistration: {
       type: WarrantyType,
       description: "Create warranty for product",
       args: {
-        productId: { type: GraphQLNonNull(GraphQLFloat) },
+        productId: { type: GraphQLNonNull(GraphQLString) },
         ownerEmail: { type: GraphQLNonNull(GraphQLString) },
         ownerName: { type: GraphQLNonNull(GraphQLString) },
-        amazonOrderId: { type: GraphQLNonNull(GraphQLString) },
+        amazonOrderId: { type: GraphQLString },
       },
       resolve: async (parent, args) => {
-        const customer_info = {
-          "owner-email": args.ownerEmail,
-          "owner-name": args.ownerName,
-          origin: "Amazon",
-          approval: "pending",
-          "product-id": args.productId,
-          "amazon-order-id": args.amazonOrderId,
-        };
-        DatabaseService.addCustomerRegistration(customer_info);
+        const { ownerEmail, ownerName, productId, amazonOrderId } = args;
+        const product = await Product.findOne({productId});
+        if (product) {
+          const warrantyStart = new Date();
+          const warrantyExp = new Date(
+            warrantyStart.getFullYear() + product.warrantyDuration,
+            warrantyStart.getMonth(),
+            warrantyStart.getDate()
+          );
+          const data = {
+            ownerEmail,
+            ownerName,
+            productId,
+            productName: product.productName,
+            origin: amazonOrderId ? "Amazon" : "Shopify",
+            approval: "pending",
+            warrantyStart,
+            warrantyExp,
+            amazonOrderId
+          };
+          const warranty = new Warranty(data);
+          await warranty.save();
+          const mailOptions = {
+            from: SENDER_EMAIL,
+            to: ownerEmail,
+            subject: 'Product Warranty added',
+            text: `Hi ${ownerName}. You warranty request for ${product.productName} was successfully registered.`
+          };
+          transporter.sendMail(mailOptions, (error, info) => {
+            console.log(error ? error : `Email sent: ${info.response}`);
+          });
+          return warranty;
+        }
+        return null;
       },
     },
+
     addWarrantyApproval: {
       type: WarrantyType,
       description: "Approve warranty",
       args: {
-        productId: { type: GraphQLNonNull(GraphQLFloat) },
-        warrantyExp: { type: GraphQLNonNull(GraphQLString) },
+        productId: { type: GraphQLNonNull(GraphQLString) },
+        ownerEmail: { type: GraphQLNonNull(GraphQLString) },
       },
       resolve: async (parent, args) => {
-        DatabaseService.approveWarranty(args.warrantyExp, args.productId);
+        const { productId, ownerEmail } = args;
+        const product = await Product.findOne({ productId });
+        const warranty = await Warranty.findOne({ productId, ownerEmail });
+        const warrantyStart = new Date(warranty.warrantyStart);
+        const warrantyExp = new Date(
+          warrantyStart.getFullYear() + product.warrantyDuration,
+          warrantyStart.getMonth(),
+          warrantyStart.getDate()
+        );
+        warranty.warrantyExp = warrantyExp;
+        warranty.approval = "approved";
+        await warranty.save();
+        const mailOptions = {
+          from: SENDER_EMAIL,
+          to: ownerEmail,
+          subject: 'Product Warranty approved',
+          text: `Hi ${ownerName}. You warranty request for ${product.productName} was successfully approved.`
+        };
+        transporter.sendMail(mailOptions, (error, info) => {
+          console.log(error ? error : `Email sent: ${info.response}`);
+        });
+        return warranty;
         //code to update database's approval to approved,
         //probably send an email after
       },
     },
+
     warrantyDenied: {
       type: WarrantyType,
       description: "Deny warranty",
       args: {
-        productId: { type: GraphQLNonNull(GraphQLFloat) },
-        warrantyExp: { type: GraphQLNonNull(GraphQLString) },
+        productId: { type: GraphQLNonNull(GraphQLString) },
+        ownerEmail: { type: GraphQLNonNull(GraphQLString) },
       },
       resolve: async (parent, args) => {
-        DatabaseService.deleteWarranty(args.warrantyExp, args.productId);
+        const { productId, ownerEmail } = args;
+        await Warranty.findOneAndRemove({ productId, ownerEmail });
+        return {productId};
         //code to remove warranty
         //email?
       },
