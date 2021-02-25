@@ -54,11 +54,6 @@ app.post("/api/shopify/order", jsonParser, async (req, res) => {
       const product = await Product.findOne({ productId: item.product_id });
       if (product && customer) {
         const warrantyStart = new Date();
-        console.log([
-          warrantyStart.getFullYear(),
-          product.warrantyDuration,
-          product.warrantyDuration + warrantyStart.getFullYear()
-        ], "test");
         const warrantyExp = new Date(
           warrantyStart.getFullYear() + product.warrantyDuration,
           warrantyStart.getMonth(),

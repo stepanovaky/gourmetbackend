@@ -282,7 +282,7 @@ const RootMutationType = new GraphQLObjectType({
         sendEmail(
           ownerEmail,
           'Product Warranty approved',
-          `Hi ${ownerName}. You warranty request for ${product.productName} was successfully approved.`
+          `Hi ${warranty.ownerName}. You warranty request for ${product.productName} was successfully approved.`
         );
         return warranty;
       },
