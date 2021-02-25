@@ -8,19 +8,10 @@ var {
   GraphQLNonNull,
   GraphQLFloat,
 } = require("graphql");
-const nodemailer = require('nodemailer');
 const Product = require("./models/Product");
 const Warranty = require("./models/Warranty");
 const Customer = require("./models/Customer");
-const { SENDER_EMAIL, SENDER_PASSWORD } = require('./config');
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: SENDER_EMAIL,
-    pass: SENDER_PASSWORD
-  }
-});
+const sendEmail = require('./mailer');
 
 const ProductType = new GraphQLObjectType({
   name: "products",
@@ -257,15 +248,11 @@ const RootMutationType = new GraphQLObjectType({
           };
           const warranty = new Warranty(data);
           await warranty.save();
-          const mailOptions = {
-            from: SENDER_EMAIL,
-            to: ownerEmail,
-            subject: 'Product Warranty added',
-            text: `Hi ${ownerName}. You warranty request for ${product.productName} was successfully registered.`
-          };
-          transporter.sendMail(mailOptions, (error, info) => {
-            console.log(error ? error : `Email sent: ${info.response}`);
-          });
+          sendEmail(
+            ownerEmail,
+            'Product Warranty added',
+            `Hi ${ownerName}. You warranty request for ${product.productName} was successfully registered.`
+          );
           return warranty;
         }
         return null;
@@ -292,18 +279,12 @@ const RootMutationType = new GraphQLObjectType({
         warranty.warrantyExp = warrantyExp;
         warranty.approval = "approved";
         await warranty.save();
-        const mailOptions = {
-          from: SENDER_EMAIL,
-          to: ownerEmail,
-          subject: 'Product Warranty approved',
-          text: `Hi ${ownerEmail}. You warranty request for ${product.productName} was successfully approved.`
-        };
-        transporter.sendMail(mailOptions, (error, info) => {
-          console.log(error ? error : `Email sent: ${info.response}`);
-        });
+        sendEmail(
+          ownerEmail,
+          'Product Warranty approved',
+          `Hi ${ownerName}. You warranty request for ${product.productName} was successfully approved.`
+        );
         return warranty;
-        //code to update database's approval to approved,
-        //probably send an email after
       },
     },
 

@@ -6,7 +6,8 @@ const cors = require("cors");
 const { NODE_ENV } = require("./config");
 var { graphqlHTTP } = require("express-graphql");
 const schema = require("./schema");
-const DatabaseService = require("./database-service");
+const Product = require("./models/Product");
+const Warranty = require("./models/Warranty");
 // const fetch = require("./database-service");
 
 const app = express();
@@ -47,20 +48,36 @@ app.post("/api/product", jsonParser, async (req, res, next) => {
 
 app.post("/api/shopify/order", jsonParser, async (req, res) => {
   res.status(200).json({ message: "order went through" });
-  req.body.line_items.map((item) => {
+  req.body.line_items.map(async (item) => {
     if (req.body.customer.email !== null) {
-      const customer_info = {
-        "owner-email": req.body.customer.email,
-        "owner-name": `${req.body.customer.first_name} ${req.body.customer.last_name}`,
-        origin: "Shopify",
-        approval: "approved",
-        "product-id": item.product_id,
-        amazonOrderId: "none",
-      };
-      try {
-        DatabaseService.addCustomerRegistration(customer_info);
-      } catch (err) {}
-    } else {
+      const customer = req.body.customer;
+      const product = await Product.findOne({ productId: item.product_id });
+      if (product && customer) {
+        const warrantyStart = new Date();
+        console.log([
+          warrantyStart.getFullYear(),
+          product.warrantyDuration,
+          product.warrantyDuration + warrantyStart.getFullYear()
+        ], "test");
+        const warrantyExp = new Date(
+          warrantyStart.getFullYear() + product.warrantyDuration,
+          warrantyStart.getMonth(),
+          warrantyStart.getDate()
+        );
+        const data = {
+          ownerEmail: customer.email,
+          ownerName: `${customer.first_name} ${customer.last_name}`,
+          origin: 'Shopify',
+          approval: 'approved',
+          productId: item.product_id,
+          productName: item.title,
+          amazonOrderId: req.body.id,
+          warrantyStart,
+          warrantyExp
+        };
+        const warranty = new Warranty(data);
+        await warranty.save();
+      }
     }
   });
 });
