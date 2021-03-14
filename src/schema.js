@@ -265,11 +265,12 @@ const RootMutationType = new GraphQLObjectType({
       args: {
         productId: { type: GraphQLNonNull(GraphQLString) },
         ownerEmail: { type: GraphQLNonNull(GraphQLString) },
+        amazonOrderId: { type: GraphQLNonNull(GraphQLString) },
       },
       resolve: async (parent, args) => {
-        const { productId, ownerEmail } = args;
+        const { productId, ownerEmail, amazonOrderId } = args;
         const product = await Product.findOne({ productId });
-        const warranty = await Warranty.findOne({ productId, ownerEmail });
+        const warranty = await Warranty.findOne({ productId, ownerEmail, amazonOrderId });
         const warrantyStart = new Date(warranty.warrantyStart);
         const warrantyExp = new Date(
           warrantyStart.getFullYear() + product.warrantyDuration,
@@ -294,10 +295,11 @@ const RootMutationType = new GraphQLObjectType({
       args: {
         productId: { type: GraphQLNonNull(GraphQLString) },
         ownerEmail: { type: GraphQLNonNull(GraphQLString) },
+        amazonOrderId: { type: GraphQLNonNull(GraphQLString) },
       },
       resolve: async (parent, args) => {
-        const { productId, ownerEmail } = args;
-        await Warranty.findOneAndRemove({ productId, ownerEmail });
+        const { productId, ownerEmail, amazonOrderId } = args;
+        await Warranty.findOneAndRemove({ productId, ownerEmail, amazonOrderId });
         return {productId};
         //code to remove warranty
         //email?

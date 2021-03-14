@@ -8,5 +8,5 @@ module.exports = {
     GMAIL_CLIENT_ID: '947325922924-oq19oh08l9hqnqdraaf2gjpnvnfje390.apps.googleusercontent.com',
     GMAIL_CLIENT_SECRET: '_n1DTU4F_KtrZp2MPnB39XCC',
     GMAIL_REDIRECT_URI: 'https://developers.google.com/oauthplayground',
-    GMAIL_REFRESH_TOKEN: '1//04gsm5fdpEyk5CgYIARAAGAQSNwF-L9IrG2fnRfil4JMFRxmOhw_GPrCJr7oLgpKHim6uXoYgp9gdHd1Kyb8_Kr2ANo9q-leUvvk'
+    GMAIL_REFRESH_TOKEN: '1//0447JKTUeBxdRCgYIARAAGAQSNwF-L9IrDVwdOQ7jQNe8WkS-SVF3BT0toxrpwK3AQcHli-rOiUOkdz54Id1R6QLXUsa5242JkXg'
   }
